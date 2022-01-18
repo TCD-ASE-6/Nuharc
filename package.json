@@ -1,0 +1,33 @@
+{
+  "name": "nuharc",
+  "version": "1.0.0",
+  "description": "A Disaster Management Application for Dublin built using the MERN Stack",
+  "main": "server.js",
+  "scripts": {
+    "client-install": "npm install --prefix client",
+    "start": "SET NODE_ENV=production & node server.js",
+    "server": "SET NODE_ENV=development & nodemon server.js",
+    "client": "npm start --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "prod": "concurrently \"npm run start\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TCD-ASE-6/Nuharc.git"
+  },
+  "author": "TCD ASE Group 6",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TCD-ASE-6/Nuharc/issues"
+  },
+  "homepage": "https://github.com/TCD-ASE-6/Nuharc#readme",
+  "dependencies": {
+    "body-parser": "^1.19.1",
+    "concurrently": "^7.0.0",
+    "express": "^4.17.2",
+    "mongoose": "^6.1.7"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
