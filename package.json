@@ -4,7 +4,6 @@
   "description": "A Disaster Management Application for Dublin built using the MERN Stack",
   "main": "server.js",
   "scripts": {
-    "client-install": "npm install --prefix client",
     "start": "SET NODE_ENV=production & node server.js",
     "server": "SET NODE_ENV=development & nodemon server.js",
     "client": "npm start --prefix client",

@@ -7,7 +7,6 @@ Mongoose Models go under the models folder.
 Node endpoints go under the routes folder.  
 
 #### Scripts
-__npm run client-install__, to install client node modules.  
 __npm run server__, to run just the development server.  
 __npm run client__, to run just the client.  
 __npm run dev__, to run both the client and the server concurrently on dev.  
