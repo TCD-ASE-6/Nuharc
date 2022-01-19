@@ -10,26 +10,42 @@ import {
   NavbarText,
 } from "reactstrap";
 
-function NavBar() {
-  return (
-    <div>
-      <Navbar color="primary" dark expand="sm" light>
-        <NavbarBrand href="/">NuhArc</NavbarBrand>
-        <NavbarToggler onClick={function noRefCheck() {}} />
-        <Collapse navbar>
-          <Nav className="me-auto" navbar>
-            <NavItem>
-              <NavLink href="#">Map</NavLink>
-            </NavItem>
-            <NavItem>
-              <NavLink href="#">Report Disaster</NavLink>
-            </NavItem>
-          </Nav>
-          <NavbarText>Profile Avatar</NavbarText>
-        </Collapse>
-      </Navbar>
-    </div>
-  );
+class NavBar extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      collapsed: true,
+    };
+    this.toggleNavbar = this.toggleNavbar.bind(this);
+  }
+
+  toggleNavbar() {
+    this.setState({
+      collapsed: !this.state.collapsed,
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <Navbar color="dark" dark expand="md" light>
+          <NavbarBrand href="/">NuhArc</NavbarBrand>
+          <NavbarToggler onClick={this.toggleNavbar} />
+          <Collapse isOpen={this.state.collapsed} navbar>
+            <Nav className="me-auto" navbar>
+              <NavItem>
+                <NavLink href="#">Map</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink href="#">Report Disaster</NavLink>
+              </NavItem>
+            </Nav>
+            <NavbarText>Profile Avatar</NavbarText>
+          </Collapse>
+        </Navbar>
+      </div>
+    );
+  }
 }
 
 export default NavBar;
