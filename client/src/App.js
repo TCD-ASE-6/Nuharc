@@ -1,15 +1,17 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Provider } from "react-redux";
-import store from "./store";
+// import { Provider } from "react-redux";
+// import store from "./store";
+
+import NavBar from './components/NavBar/NavBar';
 
 function App() {
   return (
-    <Provider store={store}>
+    // <Provider store={store}>
       <div className="App">
-        <h1>Hello World</h1>
+        <NavBar />
       </div>
-    </Provider>
+    // </Provider>
   );
 }
 
