@@ -1,6 +1,7 @@
 # Nuharc  
 
 create your development cluster on mongodb atlas and add the db uri under config/keys.js (devMongoURI) before proceeding.  
+Install React and Redux Extensions on your browsers.  
 The UI can be found under the Client folder.  
 Mongoose Models go under the models folder.  
 Node endpoints go under the routes folder.  
