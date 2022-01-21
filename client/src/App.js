@@ -12,6 +12,7 @@ function App() {
       <div className="App">
         <NavBar />
         <LoginPage />
+        <Register />
       </div>
     // </Provider>
   );
