@@ -1,13 +1,16 @@
 const express = require("express");
-const res = require("express/lib/response");
 const router = express.Router();
+const res = require("express/lib/response");
+
+const bcrypt = require("bcryptjs");
+const config = require("config");
+const jwt = require("jsonwebtoken");
 
 const User = require("../../models/User");
 
-// No need to handle Ids, MongoDB creates them internally.
-
-// GET all users
-// get all users from the database
+// @route    GET api/users
+// @desc     Get all users
+// @access   Public
 // TODO add restrictions
 router.get("/", (req, res) => {
   User.find()
@@ -15,40 +18,90 @@ router.get("/", (req, res) => {
     .then((users) => res.json(users));
 });
 
-// POST user
-// Input Arguments: User Object
-// creates a new user
-router.post("/", (req, res) => {
-  // Create a new user
-  const newUser = new User({
-    name: req.body.name,
-    email: req.body.email,
-    password: req.body.password,
-    role: req.body.role,
-    date: req.body.date,
-  });
+// @route    POST api/users/register
+// @desc     register a new user
+// @access   Public
+router.post("/signup", (req, res) => {
+  // TODO: get 2 passwords from UI, check if they are equal and save one.
+  const { name, email, password1, password2, role } = req.body;
 
-  // save the new users
-  newUser
-    .save()
-    .then(() => {
-      console.log(res.json(newUser));
-      res.json(newUser);
-    })
-    .catch((err) => {
-      _message = err.message;
-      res.status(400).json({ _message });
+  if (!name || !email || !password1 || !password2 || !role) {
+    return res.status(400).json({ message: "Please Enter all fields." });
+  }
+
+  if (password1 !== password2) {
+    return res.status(400).json({ message: "Passwords do not match." });
+  }
+
+  if (password1.length < 6) {
+    return res
+      .status(400)
+      .json({ message: "Password Should be atleast 6 characters." });
+  }
+
+  User.findOne({ email }).then((user) => {
+    if (user) {
+      return res.status(400).json({ message: "User already exists." });
+    }
+
+    const newUser = new User({
+      name,
+      email,
+      password,
+      role,
     });
+
+    // Create Salt and Hash
+    bcrypt.genSalt(10, (err, salt) => {
+      bcrypt.hash(newUser.password, salt, (err, hash) => {
+        if (err) {
+          throw err;
+        }
+
+        newUser.password = hash;
+        newUser.save().then((user) => {
+          jwt.sign(
+            { id: user.id },
+            config.get("jwtSecret"),
+            { expiresIn: 2629746 },
+            (err, token) => {
+              if (err) {
+                throw err;
+              }
+
+              res.json({
+                token,
+                user: {
+                  id: user.id,
+                  name: user.name,
+                  email: user.email,
+                  role: user.role,
+                },
+              });
+            }
+          );
+
+          res.json({
+            user: {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+            },
+          });
+        });
+      });
+    });
+  });
 });
 
-// DELETE user
-// Input Arguments: User Object Id
-// delete a user
-router.delete('/:id', (req, res) => {
+// @route    DELETE api/users/{id}
+// @desc     deletes an existing user
+// @access   Public
+router.delete("/:id", (req, res) => {
   User.findById(req.params.id)
-    .then(user => {
-      user.remove()
-      .then(() => res.json({success: true}));
+    .then((user) => {
+      user.remove().then(() => res.json({ success: true }));
     })
     .catch((err) => {
       _message = err.message;

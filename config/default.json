@@ -1,0 +1,5 @@
+{
+    "mongoURI": "mongodb+srv://tcdase6:tcdase6@cluster0.ybqis.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
+    "devMongoURI": "dev",
+    "jwtSecret": "f#cJ^H1Zumc]\"ZfT<xZq*n6):,%ki$\"8>2U^d]xNCU~*}=n%}&CMu\"L45,7rV</"
+}
