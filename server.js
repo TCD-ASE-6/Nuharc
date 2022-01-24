@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const passport = require("passport");
 
 const users = require("./routes/api/users");
 const config = require("config");
@@ -41,6 +42,12 @@ mongoose
   })
   .then(() => console.log("Connected to MongoDB..."))
   .catch((err) => console.error(err));
+
+// passport middleware
+app.use(passport.initialize());
+
+// passport config
+require('./config/passport')(passport);
 
 // Route base path rules
 app.use("/api/users", users);

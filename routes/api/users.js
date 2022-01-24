@@ -5,6 +5,7 @@ const res = require("express/lib/response");
 const bcrypt = require("bcryptjs");
 const config = require("config");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const User = require("../../models/User");
 
@@ -18,14 +19,14 @@ router.get("/", (req, res) => {
     .then((users) => res.json(users));
 });
 
-// @route    POST api/users/register
+// @route    POST api/users/signup
 // @desc     register a new user
 // @access   Public
 router.post("/signup", (req, res) => {
   // TODO: get 2 passwords from UI, check if they are equal and save one.
-  const { name, email, password1, password2, role } = req.body;
+  const { name, surname, email, password1, password2, role } = req.body;
 
-  if (!name || !email || !password1 || !password2 || !role) {
+  if (!name || !surname || !email || !password1 || !password2 || !role) {
     return res.status(400).json({ message: "Please Enter all fields." });
   }
 
@@ -46,8 +47,9 @@ router.post("/signup", (req, res) => {
 
     const newUser = new User({
       name,
+      surname,
       email,
-      password,
+      password: password1,
       role,
     });
 
@@ -62,8 +64,8 @@ router.post("/signup", (req, res) => {
         newUser.save().then((user) => {
           jwt.sign(
             { id: user.id },
-            config.get("jwtSecret"),
-            { expiresIn: 2629746 },
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: process.env.MONTH_IN_SECONDS },
             (err, token) => {
               if (err) {
                 throw err;
@@ -74,23 +76,59 @@ router.post("/signup", (req, res) => {
                 user: {
                   id: user.id,
                   name: user.name,
+                  surname: user.surname,
                   email: user.email,
                   role: user.role,
                 },
               });
             }
           );
-
-          res.json({
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-            },
-          });
         });
       });
+    });
+  });
+});
+
+// @route    POST api/users/login
+// @desc     log into user account
+// @access   Public
+router.post("/login", (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: "Please Enter all fields." });
+  }
+
+  User.findOne({ email }).then((user) => {
+    if (!user) {
+      return res.status(400).json({ message: "Email not found." });
+    }
+
+    // check password equality
+    bcrypt.compare(password, user.password).then((isMatch) => {
+      if (isMatch) {
+        jwt.sign(
+          { id: user.id },
+          process.env.JWT_SECRET_KEY,
+          { expiresIn: process.env.MONTH_IN_SECONDS },
+          (err, token) => {
+            if (err) {
+              throw err;
+            }
+
+            res.json({
+              token,
+              user: {
+                id: user.id,
+                name: user.name,
+                surname: user.surname,
+                email: user.email,
+                role: user.role,
+              },
+            });
+          }
+        );
+      }
     });
   });
 });
