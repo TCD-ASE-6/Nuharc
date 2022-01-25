@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 // import store from "./store";
 import NavBar from './components/NavBar/NavBar';
 import LoginPage from "./components/LoginPage/LoginPage";
+import SignUp from "./components/RegisterPage/SignUp";
 
 function App() {
   
@@ -12,7 +13,7 @@ function App() {
       <div className="App">
         <NavBar />
         <LoginPage />
-        <Register />
+        <SignUp />
       </div>
     // </Provider>
   );
