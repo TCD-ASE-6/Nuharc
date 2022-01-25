@@ -5,6 +5,7 @@ const res = require("express/lib/response");
 const bcrypt = require("bcryptjs");
 const config = require("config");
 const jwt = require("jsonwebtoken");
+const auth = require("../../middleware/auth");
 require("dotenv").config();
 
 const User = require("../../models/User");
@@ -13,7 +14,7 @@ const User = require("../../models/User");
 // @desc     Get all users
 // @access   Public
 // TODO add restrictions
-router.get("/", (req, res) => {
+router.get("/", auth, (req, res) => {
   User.find()
     .sort({ name: 1 })
     .then((users) => res.json(users));
