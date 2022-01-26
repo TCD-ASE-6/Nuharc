@@ -10,24 +10,25 @@ const app = express();
 
 app.use(express.json());
 
-//Add the client URL to the CORS policy
-const whitelist = process.env.WHITELISTED_DOMAINS
-  ? process.env.WHITELISTED_DOMAINS.split(",")
-  : [];
+// Add the client URL to the CORS policy
+// const whitelist = process.env.WHITELISTED_DOMAINS
+//   ? process.env.WHITELISTED_DOMAINS.split(",")
+//   : [];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     console.log(origin);
+//     if (!origin || whitelist.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
 
-  credentials: true,
-};
+//   credentials: true,
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 
 // Get MongoDbURI according to ENV script
 const db =

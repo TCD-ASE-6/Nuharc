@@ -8,6 +8,7 @@ import {
 } from 'reactstrap';
 import { signupUser } from '../../actions/userActions';
 import Role from '../../helpers/role';
+import { connect } from 'react-redux';
 
 class SignUp extends Component {
   constructor(props) {
@@ -24,13 +25,20 @@ class SignUp extends Component {
     }
   }
 
-  signupUser(event) {
+  signupUser = (event) => {
     event.preventDefault();
-    this.props.signupUser()
+    const newUser = {
+      name: this.state.name,
+      surname: this.state.surname,
+      email: this.state.email,
+      role: this.state.role,
+      password1: this.state.password1,
+      password2: this.state.password2
+    }
+    this.props.signupUser(newUser);
   }
 
   onChange = (e) => {
-    console.log(e.target.name)
     this.setState({ [e.target.name]: e.target.value });
   };
 
@@ -39,25 +47,25 @@ class SignUp extends Component {
       <Form>
         <FormGroup>
           <Label for="userName">Name</Label>
-          <Input type="text" name="name" id="userName" onchange={this.onChange} placeholder="Enter your Username" />
+          <Input type="text" name="name" id="userName" onChange={this.onChange} placeholder="Enter your Username" />
         </FormGroup>
         <FormGroup>
           <Label for="userSurname">Surname</Label>
-          <Input type="text" name="surname" id="userSurname" onchange={this.onChange} placeholder="Enter your Surname" />
+          <Input type="text" name="surname" id="userSurname" onChange={this.onChange} placeholder="Enter your Surname" />
         </FormGroup>
         <FormGroup>
           <Label for="userEMail">Email</Label>
-          <Input type="email" name="email" id="userEMail" onchange={this.onChange} placeholder="Enter your E-Mail" />
+          <Input type="email" name="email" id="userEMail" onChange={this.onChange} placeholder="Enter your E-Mail" />
         </FormGroup>
         <FormGroup>
           <Label for="userPassword1">Password</Label>
-          <Input type="password" name="password1" id="userPassword1" onchange={this.onChange} placeholder="Enter your Password" />
+          <Input type="password" name="password1" id="userPassword1" onChange={this.onChange} placeholder="Enter your Password" />
         </FormGroup>
         <FormGroup>
           <Label for="userPassword2">Confirm your Password</Label>
-          <Input type="password" name="password2" id="userPassword2" onchange={this.onChange} placeholder="Enter your Password Again" />
+          <Input type="password" name="password2" id="userPassword2" onChange={this.onChange} placeholder="Enter your Password Again" />
         </FormGroup>
-        <Button onClick={signupUser}>Sign Up</Button>
+        <Button onClick={this.signupUser}>Sign Up</Button>
       </Form>
     );
   }
