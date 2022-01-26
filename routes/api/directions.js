@@ -3,7 +3,7 @@ const router = express.Router();
 const axios = require("axios");
 var polyline = require("google-polyline");
 
-const key = require("../../config/keys");
+const keys = require("../../config/keys");
 
 router.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -19,10 +19,9 @@ router.get("/getRoute", async (req, res) => {
   const from = params[0].split("=")[1];
   const to = params[1].split("=")[1];
   const wayPoints = [];
-  console.log(from, to);
   axios
     .get(
-      `https://maps.googleapis.com/maps/api/directions/json?origin=${from}&destination=${to}&key=${key.googleMapsAPIKey}&sensor=false&alternatives=true`
+      `https://maps.googleapis.com/maps/api/directions/json?origin=${from}&destination=${to}&key=${keys.googleMapsAPIKey}&sensor=false&alternatives=true`
     )
     .then(function (response) {
       // res.send(response.data);
@@ -31,7 +30,6 @@ router.get("/getRoute", async (req, res) => {
         route_decoded = polyline.decode(route.overview_polyline.points);
         wayPoints.push(route_decoded);
       });
-
       res.send(wayPoints);
     })
     .catch(function (error) {

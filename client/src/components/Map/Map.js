@@ -1,7 +1,14 @@
 import React, { Component, useEffect, useState } from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./Marker";
-import keys from "../../../../config/keys";
+
+const API_KEY = "AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY";
+
+function get_str(loc) {
+  return `${loc.lat},${loc.lng}`;
+}
+
+function checkDisasterInRoute(route, disasterLocation) {}
 
 function Map() {
   const [currentCoordinates, setCurrentCoordinates] = useState(0);
@@ -13,20 +20,29 @@ function Map() {
   const [zoom, setZoom] = useState(15);
 
   // Getting the current location
-  navigator.geolocation.getCurrentPosition(function (position) {
-    // setting current location into the state
-    setCurrentLocation({
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-    });
+  var options = {
+    enableHighAccuracy: true,
+    timeout: 5000,
+    maximumAge: 0,
+  };
+  navigator.geolocation.getCurrentPosition(
+    function (position) {
+      setCurrentCoordinates({
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+      });
+      setDestinationCoordinates({
+        lat: 53.35460864423722,
+        lng: -6.256456570972608,
+      });
+    },
+    function error(err) {
+      console.warn(`ERROR(${err.code}): ${err.message}`);
+    },
+    options
+  );
 
-    setDestinationCoordinates({
-      lat: 53.3458095,
-      lng: -6.2543664,
-    });
-  });
-
-  getRoutes = async (from, to) => {
+  async function getRoutes(from, to) {
     let data = "";
     try {
       data = await fetch(
@@ -36,24 +52,32 @@ function Map() {
       console.log(error);
     }
     data = await data.text().then((data) => JSON.parse(data));
-    if (data.status === "OK" && data.routes.length) {
-      setAllRoutes(data);
-      setCountOfRoutes(data.length);
-      setCurrentRouteIndex(0);
-    }
-  };
+    setAllRoutes(data);
+    setCountOfRoutes(data.length);
+    setCurrentRouteIndex(0);
+  }
 
   return (
     <div style={{ height: "93.5vh", width: "100%" }}>
+      <button
+        onClick={() =>
+          getRoutes(
+            get_str(currentCoordinates),
+            get_str(destinationCoordinates)
+          )
+        }
+      >
+        Get Routes
+      </button>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: keys.googleMapsAPIKey }}
-        center={currentLocation}
+        bootstrapURLKeys={{ key: API_KEY }}
+        center={currentCoordinates}
         defaultZoom={zoom}
       >
         {/* Placing the marker at the current location */}
         <Marker
-          lat={currentLocation.lat}
-          lng={currentLocation.lng}
+          lat={currentCoordinates.lat}
+          lng={currentCoordinates.lng}
           name="Current Location"
           color="blue"
         ></Marker>
