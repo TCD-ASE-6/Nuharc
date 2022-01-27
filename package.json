@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "SET NODE_ENV=production & node server.js",
-    "server": "SET NODE_ENV=development & nodemon server.js",
+    "server": "SET NODE_ENV=production & nodemon server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "prod": "concurrently \"npm run start\" \"npm run client\""
@@ -21,11 +21,17 @@
   },
   "homepage": "https://github.com/TCD-ASE-6/Nuharc#readme",
   "dependencies": {
-    "body-parser": "^1.19.1",
+    "bcryptjs": "^2.4.3",
     "concurrently": "^7.0.0",
+    "config": "^3.3.7",
+    "cors": "^2.8.5",
+    "dotenv": "^14.2.0",
     "express": "^4.17.2",
-    "google-map-react": "^2.1.10",
+    "jsonwebtoken": "^8.5.1",
     "mongoose": "^6.1.7",
+    "passport": "^0.5.2",
+    "passport-jwt": "^4.0.0",
+    "google-map-react": "^2.1.10",
     "react-scripts": "^5.0.0"
   },
   "devDependencies": {
