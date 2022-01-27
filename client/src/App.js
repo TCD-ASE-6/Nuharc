@@ -10,6 +10,7 @@ import NavBar from './components/NavBar/NavBar';
 import LoginPage from "./components/LoginPage/LoginPage";
 import SignUp from "./components/RegisterPage/SignUp";
 import Map from "./components/Map/Map";
+import ReportIncident from "./components/ReportIncident/ReportIncident";
 
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
           <Route path='/map' element={<Map />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignUp />} />
+          <Route path='/report' element={<ReportIncident />} />
         </Routes>
       </Router>
     </Provider>

@@ -1,6 +1,8 @@
 import React, { Component, useEffect, useState } from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./Marker";
+import IncidentMarker from "./IncidentMarker";
+import { useSelector } from "react-redux";
 // import {
 //   withGoogleMap,
 //   withScriptjs,
@@ -96,6 +98,8 @@ function Map() {
     setMaps(maps);
   }
 
+  //retrieve current list of inicdents from the redux store
+  const incidents = useSelector (state => state.incidents);
   return (
     <div style={{ height: "93.5vh", width: "100%" }}>
       <button
@@ -127,6 +131,14 @@ function Map() {
           name="Destination Location"
           color="red"
         ></Marker>
+      {incidents.incidentList.map((incident, i) => (
+            <IncidentMarker
+            lng={incident.longitude.$numberDecimal}
+            lat={incident.latitude.$numberDecimal}
+            date={incident.date}
+            incidentType={incident.incidentType}
+            />
+          ))}
       </GoogleMapReact>
     </div>
   );

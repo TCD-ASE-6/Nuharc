@@ -3,11 +3,9 @@ import { NavLink } from 'react-router-dom';
 import { Navbar } from 'react-bootstrap';
 import "../../style/main.css";
 import "../../index";
-import LoginPage from "../LoginPage/LoginPage";
 import { Container } from 'react-bootstrap';
 import { Nav } from 'react-bootstrap';
 import { NavDropdown } from 'react-bootstrap';
-
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 class NavBar extends React.Component {
@@ -36,6 +34,7 @@ class NavBar extends React.Component {
               <Nav className="me-auto">
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/map">Map</Nav.Link>
+                <Nav.Link href="/report">Report Incident</Nav.Link>
               </Nav>
               <Nav>
                 <NavDropdown title="Account" id="basic-nav-dropdown">
