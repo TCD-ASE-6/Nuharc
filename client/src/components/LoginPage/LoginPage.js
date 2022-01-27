@@ -1,26 +1,30 @@
-import React from 'react';
-import { 
-  Button, 
-  Form, 
-  FormGroup, 
-  Label, 
-  Input 
-  } from 'reactstrap';
+import React from "react";
+import { Button, Form, FormGroup, Label, Input } from "reactstrap";
 
 const LoginPage = (props) => {
   return (
     <Form>
       <FormGroup>
         <Label for="userEMail">Email</Label>
-        <Input type="email" name="email" id="userEMail" placeholder="Enter your Email"/>
+        <Input
+          type="email"
+          name="email"
+          id="userEMail"
+          placeholder="Enter your Email"
+        />
       </FormGroup>
       <FormGroup>
         <Label for="userPassword">Password</Label>
-        <Input type="password" name="password" id="userPassword" placeholder="Enter your Password"/>
+        <Input
+          type="password"
+          name="password"
+          id="userPassword"
+          placeholder="Enter your Password"
+        />
       </FormGroup>
       <Button>Login</Button>
     </Form>
-      );
-    }
-    
-    export default LoginPage;
+  );
+};
+
+export default LoginPage;
