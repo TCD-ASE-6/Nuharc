@@ -46,7 +46,7 @@ function Map() {
     timeout: 5000,
     maximumAge: 0,
   };
-  navigator.geolocation.getCurrentPosition(
+  navigator.geolocation.watchPosition(
     function (position) {
       setCurrentCoordinates({
         lat: position.coords.latitude,
