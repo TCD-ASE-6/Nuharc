@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { LOGIN_USER, SIGNUP_USER } from './types';
 
-export const loginUser = (email, password) => (dispatch) => {
-    axios.post(`api/users/login`, email, password).then((res) => {
+export const loginUser = (user) => (dispatch) => {
+    axios.post(`api/users/login`, user).then((res) => {
         dispatch({
             type: LOGIN_USER,
             payload: res.data
