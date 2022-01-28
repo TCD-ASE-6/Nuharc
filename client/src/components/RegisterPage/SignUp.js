@@ -9,6 +9,7 @@ import {
 import { signupUser } from '../../actions/userActions';
 import Role from '../../helpers/role';
 import { connect } from 'react-redux';
+import '../../style/Signup.css';
 
 class SignUp extends Component {
   constructor(props) {
