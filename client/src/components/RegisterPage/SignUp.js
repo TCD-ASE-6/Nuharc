@@ -58,7 +58,7 @@ class SignUp extends Component {
           <Input type="email" name="email" id="userEMail" onChange={this.onChange} placeholder="Enter your E-Mail" />
         </FormGroup>
         <FormGroup>
-          <Label for="userPassword1">Password</Label>
+          <Label for="userPassword1">Enter your Password</Label>
           <Input type="password" name="password1" id="userPassword1" onChange={this.onChange} placeholder="Enter your Password" />
         </FormGroup>
         <FormGroup>

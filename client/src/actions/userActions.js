@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { LOGIN_USER, SIGNUP_USER } from './types';
+import { LOGIN_USER, SIGNUP_USER, DELETE_USER } from './types';
 
 export const loginUser = (user) => (dispatch) => {
     axios.post(`api/users/login`, user).then((res) => {
@@ -18,3 +18,11 @@ export const signupUser = (user) => (dispatch) => {
         })
     });
 };
+
+export const deleteUser = (id) => (dispatch) => {
+    axios.delete(`api/users/${id}`).then((res) => {
+        dispatch({
+            type:DELETE_USER,
+        })
+    })
+}
