@@ -29,6 +29,7 @@
     "google-polyline": "^1.0.3",
     "mongoose": "^6.1.7",
     "react-google-maps": "^9.4.5",
+    "react-places-autocomplete": "^7.3.0",
     "react-scripts": "^5.0.0"
   },
   "devDependencies": {

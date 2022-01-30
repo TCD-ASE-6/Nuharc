@@ -1,6 +1,11 @@
-import React, { Component, useEffect, useState } from "react";
+// import React, { Component, useEffect, useState } from "react";
+import React, { useState } from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./Marker";
+import PlacesAutocomplete, {
+  geocodeByAddress,
+  getLatLng,
+} from "react-places-autocomplete";
 // import {
 //   withGoogleMap,
 //   withScriptjs,
@@ -39,6 +44,11 @@ function Map() {
   const [getRoutesClicked, setGetRoutesCliked] = useState(false);
   const [map, setMap] = useState(null);
   const [maps, setMaps] = useState(null);
+  const [address, setAddress] = useState("");
+  const [coordinates, setCoordinates] = useState({
+    lat: null,
+    lng: null
+  });
 
   // Getting the current location
   var options = {
@@ -96,8 +106,55 @@ function Map() {
     setMaps(maps);
   }
 
+  const handleSelect = async value => {
+    const results = geocodeByAddress(value);
+    const latlng = getLatLng(results[0]);
+    setAddress(value);
+    setCoordinates(latlng);
+  };
+
   return (
     <div style={{ height: "93.5vh", width: "100%" }}>
+      <div>
+        <PlacesAutocomplete
+          value={address}
+          onChange={setAddress}
+          onSelect={handleSelect}
+        >{({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
+          <div>
+            <p>Latitude: {coordinates.lat}</p>
+            <p>Longitude: {coordinates.lng}</p>
+            <input
+              {...getInputProps({
+                placeholder: 'Search Places ...',
+                className: 'location-search-input',
+              })}
+            />
+            <div className="autocomplete-dropdown-container">
+              {loading && <div>Loading...</div>}
+              {suggestions.map(suggestion => {
+                const className = suggestion.active
+                  ? 'suggestion-item--active'
+                  : 'suggestion-item';
+                // inline style for demonstration purpose
+                const style = suggestion.active
+                  ? { backgroundColor: '#fafafa', cursor: 'pointer' }
+                  : { backgroundColor: '#ffffff', cursor: 'pointer' };
+                return (
+                  <div
+                    {...getSuggestionItemProps(suggestion, {
+                      className,
+                      style,
+                    })}
+                  >
+                    <span>{suggestion.description}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}</PlacesAutocomplete>
+      </div>
       <button
         onClick={() =>
           getRoutes(

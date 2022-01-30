@@ -7583,6 +7583,14 @@
   "resolved" "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz"
   "version" "17.0.2"
 
+"react-places-autocomplete@^7.3.0":
+  "integrity" "sha512-86wcHC69JATvWBnIS/yCsBHLtwzOGcnx3Ye94u74yTrz1jLRC/txkVDkf6rvC+Jq3zNe/tAg/W53x0EaH1ZPPw=="
+  "resolved" "https://registry.npmjs.org/react-places-autocomplete/-/react-places-autocomplete-7.3.0.tgz"
+  "version" "7.3.0"
+  dependencies:
+    "lodash.debounce" "^4.0.8"
+    "prop-types" "^15.5.8"
+
 "react-refresh@^0.11.0", "react-refresh@>=0.10.0 <1.0.0":
   "integrity" "sha512-F27qZr8uUqwhWZboondsPx8tnC3Ct3SxZA3V5WyEvujRyyNv0VYPhoBg1gZ8/MV5tubQp76Trw8lTv9hzRBa+A=="
   "resolved" "https://registry.npmjs.org/react-refresh/-/react-refresh-0.11.0.tgz"
@@ -7643,7 +7651,7 @@
   optionalDependencies:
     "fsevents" "^2.3.2"
 
-"react@^0.14.0 || ^15.0.0 || ^16.0.0", "react@^15.0.0 || ^16.0.0", "react@^16.0.0 || ^17.0.0", "react@^16.14.0", "react@>= 16":
+"react@^0.14.0 || ^15.0.0 || ^16.0.0", "react@^15.0.0 || ^16.0.0", "react@^16.0.0 || ^17.0.0", "react@^16.14.0", "react@>= 16", "react@>=0.14.7":
   "integrity" "sha512-0X2CImDkJGApiAlcf0ODKIneSwBPhqJawOa5wCtKbu7ZECrmS26NvtSILynQ66cgkT/RJ4LidJOc3bUESwmU8g=="
   "resolved" "https://registry.npmjs.org/react/-/react-16.14.0.tgz"
   "version" "16.14.0"
