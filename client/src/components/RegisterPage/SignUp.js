@@ -47,7 +47,7 @@ class SignUp extends Component {
       <Form>
         <FormGroup>
           <Label for="userName">Name</Label>
-          <Input type="text" name="name" id="userName" onChange={this.onChange} placeholder="Enter your Username" />
+          <Input type="text" name="name" id="userName" onChange={this.onChange} placeholder="Enter your Name" />
         </FormGroup>
         <FormGroup>
           <Label for="userSurname">Surname</Label>
@@ -55,7 +55,7 @@ class SignUp extends Component {
         </FormGroup>
         <FormGroup>
           <Label for="userEMail">Email</Label>
-          <Input type="email" name="email" id="userEMail" onChange={this.onChange} placeholder="Enter your E-Mail" />
+          <Input type="email" name="email" id="userEMail" onChange={this.onChange} placeholder="Enter your Email" />
         </FormGroup>
         <FormGroup>
           <Label for="userPassword1">Enter your Password</Label>
