@@ -2,9 +2,10 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
-
 const users = require("./routes/api/users");
 const config = require("config");
+const bodyParser = require("body-parser");
+const directions = require("./routes/api/directions");
 
 const app = express();
 
@@ -28,7 +29,10 @@ app.use(express.json());
 //   credentials: true,
 // };
 
-// app.use(cors(corsOptions));
+const db =
+  process.env.NODE_ENV.trim() === "production"
+    ? require("./config/keys").mongoURI
+    : require("./config/keys").devMongoURI;
 
 // Get MongoDbURI according to ENV script
 const db =
@@ -52,6 +56,8 @@ require('./config/passport')(passport);
 
 // Route base path rules
 app.use("/api/users", users);
+
+app.use("/api/directions", directions);
 
 const port = process.env.PORT || 8080;
 
