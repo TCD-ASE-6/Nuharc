@@ -2,9 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import Map from './components/Map/Map';
-import LoginPage from './components/LoginPage/LoginPage';
-import {BrowserRouter,Routes,Route} from "react-router-dom";
 
 ReactDOM.render(
   <React.StrictMode>
