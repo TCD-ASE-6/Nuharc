@@ -1,6 +1,6 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import React, { Component, useEffect, useState } from "react";
+import React from "react";
 
 import { Provider } from "react-redux";
 import store from "./store";

@@ -1,10 +1,10 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useState } from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./Marker";
 
 function Map() {
   const [currentLocation, setCurrentLocation] = useState(0);
-  const [zoom, setZoom] = useState(15);
+  const [zoom] = useState(15);
 
   // Getting the current location
   navigator.geolocation.getCurrentPosition(function (position) {

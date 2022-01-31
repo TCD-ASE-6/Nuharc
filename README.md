@@ -18,3 +18,9 @@ If there is a port conflict, config the port in server.js.
 
 __email__: tcdase6@gmail.com  
 __password__: trinityase6  
+
+
+To run Integration tests using cypress,
+
+TODO: Disable redux dev tools extension in store.js before running integration tests. you might encounter b is undefined error, if this is enabled.
+cd into client, run npx cypress open
