@@ -29,11 +29,6 @@ app.use(express.json());
 //   credentials: true,
 // };
 
-const db =
-  process.env.NODE_ENV.trim() === "production"
-    ? require("./config/keys").mongoURI
-    : require("./config/keys").devMongoURI;
-
 // Get MongoDbURI according to ENV script
 const db =
   process.env.NODE_ENV.trim() === "production"
@@ -52,7 +47,7 @@ mongoose
 app.use(passport.initialize());
 
 // passport config
-require('./config/passport')(passport);
+require("./config/passport")(passport);
 
 // Route base path rules
 app.use("/api/users", users);
