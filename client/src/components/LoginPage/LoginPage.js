@@ -48,7 +48,7 @@ class LoginPage extends Component {
             name="password"
             id="userPassword"
             onChange={this.handleChange}
-            placeholder="Enter your Password"
+            placeholder="Enter your password"
           />
         </FormGroup>
         <Button onClick={this.loginUser}>Login</Button>

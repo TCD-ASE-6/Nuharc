@@ -10,6 +10,7 @@ import { signupUser } from '../../actions/userActions';
 import Role from '../../helpers/role';
 import { connect } from 'react-redux';
 
+
 class SignUp extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +40,7 @@ class SignUp extends Component {
   }
 
   onChange = (e) => {
-    this.setState({ [e.target.name]: e.target.value });
+    this.setState({ [e.target.name]: e.target.value });    
   };
 
   render() {
