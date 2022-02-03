@@ -6,10 +6,24 @@ const users = require("./routes/api/users");
 const config = require("config");
 const bodyParser = require("body-parser");
 const directions = require("./routes/api/directions");
+const request = require("request");
 
-const app = express();
+const app1 = express();
+const app2 = express();
 
-app.use(express.json());
+const servers = ["http://localhost:3004", "http://localhost:3005"];
+let cur = 0;
+app1.use(express.json());
+app2.use(express.json());
+
+const handler = (req, res) => {
+  const _req = request({ url: servers[cur] + req.url }).on("error", (error) => {
+    res.status(500).send(error.message);
+  });
+  req.pipe(_req).pipe(res);
+  console.log(`Using port ${servers[cur]}`);
+  cur = (cur + 1) % servers.length;
+};
 
 // Add the client URL to the CORS policy
 // const whitelist = process.env.WHITELISTED_DOMAINS
@@ -44,16 +58,24 @@ mongoose
   .catch((err) => console.error(err));
 
 // passport middleware
-app.use(passport.initialize());
+app1.use(passport.initialize());
+app2.use(passport.initialize());
 
 // passport config
 require("./config/passport")(passport);
 
 // Route base path rules
-app.use("/api/users", users);
+app1.use("/api/users", users);
+app2.use("/api/users", users);
 
-app.use("/api/directions", directions);
+app1.use("/api/directions", directions);
+app2.use("/api/directions", directions);
 
-const port = process.env.PORT || 8080;
+// const port = process.env.PORT || 8080;
 
-app.listen(port, () => console.log(`server started on port ${port}`));
+const server = express().get("*", handler).post("*", handler);
+
+server.listen(8080);
+
+app1.listen(3004, () => console.log(`server started on port 3004`));
+app2.listen(3005, () => console.log(`server started on port 3005`));
