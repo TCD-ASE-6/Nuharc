@@ -2,11 +2,14 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
-const users = require("./routes/api/users");
 const config = require("config");
 const bodyParser = require("body-parser");
-const directions = require("./routes/api/directions");
 const request = require("request");
+
+//APIs
+const directionsAPI = require("./routes/api/directions");
+const incidentsAPI = require("./routes/api/reportDisasterAPI");
+const usersAPI = require("./routes/api/users");
 
 const app1 = express();
 const app2 = express();
@@ -55,7 +58,7 @@ mongoose
     useNewUrlParser: true,
   })
   .then(() => console.log("Connected to MongoDB..."))
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("Error while connecting to MongoDB!" + err));
 
 // passport middleware
 app1.use(passport.initialize());
@@ -65,11 +68,14 @@ app2.use(passport.initialize());
 require("./config/passport")(passport);
 
 // Route base path rules
-app1.use("/api/users", users);
-app2.use("/api/users", users);
+app1.use("/api/users", usersAPI);
+app2.use("/api/users", usersAPI);
 
-app1.use("/api/directions", directions);
-app2.use("/api/directions", directions);
+app1.use("/api/directions", directionsAPI);
+app2.use("/api/directions", directionsAPI);
+
+app1.use("/api/incident", incidentsAPI);
+app2.use("/api/incident", incidentsAPI);
 
 // const port = process.env.PORT || 8080;
 
