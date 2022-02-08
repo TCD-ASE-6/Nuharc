@@ -1,4 +1,4 @@
-const shuffle = require("./util").shuffle;
+const shuffleList = require("./util").shuffleList;
 const DEFAULT_WEIGHT = 100;
   
   class BaseBalancer {
@@ -14,13 +14,15 @@ const DEFAULT_WEIGHT = 100;
   
     constructor(pool, options) {
       const { defaultWeight } = options || {};
-  
       this.defaultWeight = defaultWeight || DEFAULT_WEIGHT;
-      this.currentPool = [];
-  
       this.reset(pool);
     }
   
+    /**
+     * Reset Pool when connection ends or server restarts
+     * @param {*} originalPool 
+     * @returns 
+     */
     reset(originalPool) {
       if (!originalPool) {
           return null;
@@ -35,48 +37,47 @@ const DEFAULT_WEIGHT = 100;
           originalPool,
           this.defaultWeight
         );
-  
         const newPool = prepareData.pool;
-  
-        this.originalPool = originalPool;
-        this.currentPool = shuffle(newPool);
         this.weightMap = prepareData.weightMap;
+        this.originalPool = originalPool;
+        this.currentPool = shuffleList(newPool);
       }
-  
       return this.currentPool;
     }
   
+    /**
+     * Re Organises the pool based on default weight
+     * @param {*} pool 
+     * @param {*} defaultWeight 
+     * @returns 
+     */
     reOrganisePool(
       pool,
       defaultWeight
     ) {
       if (pool.length === 0) {
-        throw new Error("cannot transform a zero length pool");
+        throw new Error("cannot evaluate a zero length pool");
       }
   
-      const nodeList = [];
+      const list = [];
       const weightMap = new Map();
   
       pool.forEach((node) => {
-        let realWeight;
-  
+        let actualWeight;
         if (typeof node === "object") {
           const { host, weight } = node;
-  
-          nodeList.push(host);
-  
-          realWeight = weight ? weight : defaultWeight;
-          weightMap.set(host, realWeight);
+          list.push(host);
+          actualWeight = weight ? weight : defaultWeight;
+          weightMap.set(host, actualWeight);
         } else {
-          nodeList.push(node);
-  
-          realWeight = defaultWeight;
-          weightMap.set(node, realWeight);
+          list.push(node);
+          actualWeight = defaultWeight;
+          weightMap.set(node, actualWeight);
         }
       });
   
       return {
-        pool: nodeList,
+        pool: list,
         weightMap,
       };
     }
@@ -85,7 +86,11 @@ const DEFAULT_WEIGHT = 100;
       return this.weightMap.get(address);
     }
   
-    pick() {
+    /**
+     * Main method for the different algos logic
+     * To be Implemented in the Child Class
+     */
+    pickHost() {
       throw new Error("Algo logic for picking to be implemented in the base class");
     }
 

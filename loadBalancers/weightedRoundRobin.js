@@ -1,64 +1,66 @@
 const BaseBalancer = require("./baseBalancer");
-const getRandomNumber = require("./util").getRandomNumber;
 
 class WeightedRoundRobin extends BaseBalancer {
-  currentIndex = 0;
+  currentIdx = 0;
   gcdWeight = 0;
-  currentWeight = 0;
+  currWeight = 0;
   maxWeight = 0;
 
   reset(pool) {
     const nodeList = super.reset(pool);
-    this.currentIndex = -1;
-    this.currentWeight = 0;
-    this.gcdWeight = this.gcd(...this.weightMap.values());
-    // console.log("gcdWeight",this.gcdWeight);
+    this.gcdWeight = this.getGCDWeight(...this.weightMap.values());
+    this.currentIdx = -1;
+    this.currWeight = 0;
     let maxWeight = 0;
-
     nodeList.forEach((host) => {
       const weight = this.getWeight(host);
       maxWeight = Math.max(maxWeight, weight);
     });
-
     this.maxWeight = maxWeight;
-
     return nodeList;
   }
 
-  gcd(...arr) {
+/**
+ * Method to get gcd weight of the list of host
+ * Evaluates the greatest common divisor for the weights
+ * @param  {...any} arr 
+ * @returns 
+ */
+  getGCDWeight(...arr) {
     // Euclidean Algorithm
-    const data = [].concat(...arr);
-
-    const helperGcd = (x, y) => {
-      return !y ? x : this.gcd(y, x % y);
+    const list = [].concat(...arr);
+    const getGCD = (x, y) => {
+      return !y ? x : this.getGCDWeight(y, x % y);
     };
-
-    return data.reduce((a, b) => helperGcd(a, b));
+    return list.reduce((a, b) => getGCD(a, b));
   }
 
-  pick() {
-    while (true) {
-      this.currentIndex = (this.currentIndex + 1) % this.size;
+  /**
+   * Weighted Round Robin Algo Implementation
+   * Returns the host based on current Index and current Weight
+   * @returns Host 
+   */
+  pickHost() {
+    this.currentIdx = (this.currentIdx + 1) % this.size;
+    if (this.currentIdx == 0) {
+      this.currWeight = this.currWeight - this.gcdWeight;
 
-      if (this.currentIndex == 0) {
-        this.currentWeight = this.currentWeight - this.gcdWeight;
+      if (this.currWeight <= 0) {
+        this.currWeight = this.maxWeight;
 
-        if (this.currentWeight <= 0) {
-          this.currentWeight = this.maxWeight;
-
-          if (this.currentWeight == 0) return null;
+        if (this.currWeight == 0) {
+          return null;
         }
       }
-
-      const address = this.currentPool[this.currentIndex];
-      if (this.getWeight(address) >= this.currentWeight) {
-        return {
-          host: address,
-        };
-      }
+    }
+    const address = this.currentPool[this.currentIdx];
+    if (this.getWeight(address) >= this.currWeight) {
+      return {
+        host: address,
+      };
     }
   }
 
-  }
+}
 
-  module.exports = WeightedRoundRobin;
+module.exports = WeightedRoundRobin;
