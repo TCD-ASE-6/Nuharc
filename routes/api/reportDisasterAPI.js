@@ -9,7 +9,7 @@ const Incident = require('../../models/Incident');
 // @access Public
 
 router.get('/', (req, res) => {
-    Incident.find()
+    Incident.find({active:true})
     .sort({date: -1})
     .then(incidents => (res.json(incidents)))
     .catch(err => res.status(400).json({error: 'Unable to fetch any incident. Error: ' + err}))

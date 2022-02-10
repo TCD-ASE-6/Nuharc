@@ -1,13 +1,11 @@
 import { UPDATE_INCIDENTS } from "./incidentActionTypes";
-import axios from 'axios';
 
-export const updateIncidentList = () => (dispatch) => {
-    axios.get('/api/incident/').then((res) => {
+export const updateIncidentList = (data) => (dispatch) => {
+    
         dispatch({
             type: UPDATE_INCIDENTS,
-            payload: res.data
+            payload: data
         })
-    }).catch(err => {
-        console.log("Error in incidentActions. " + err);
-    });
+    
+    
 };

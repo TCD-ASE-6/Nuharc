@@ -3,9 +3,12 @@ import React, { Component, useState } from 'react';
 import { updateIncidentList } from '../../actions/incidentActions';
 import "../../App.css"
 import { connect } from 'react-redux';
+
+
 class ReportIncident extends Component{
     constructor() {
         super();
+        
         this.state = {
             latitude: 0.0,
             longitude: 0.0,
@@ -16,7 +19,7 @@ class ReportIncident extends Component{
         this.updateIncidentList = this.updateIncidentList.bind(this);
         this.updateLocation = this.updateLocation.bind(this);
     };
-
+    
     /**
      * Updates the state with the current coordinates of the app user
      *
@@ -34,8 +37,8 @@ class ReportIncident extends Component{
      * This function updates the redux store with the current list of active incidents
      *
      */
-    updateIncidentList () {
-        this.props.updateIncidentList();
+    updateIncidentList (data) {
+        this.props.updateIncidentList(data);
     }
 
     /**
@@ -45,6 +48,7 @@ class ReportIncident extends Component{
      */
     onsubmit = e => {
         e.preventDefault();
+        const navigate = useNavigate();
         const data = {
             longitude: this.state.longitude,
             latitude: this.state.latitude,
@@ -54,8 +58,9 @@ class ReportIncident extends Component{
 
         axios.post('/api/incident/report', data).then(res => {
             //update incidentList in redux store after incident was added
-            this.updateIncidentList()
+            this.updateIncidentList(data)
         });
+        navigate('/map')
     };
 
     /**
@@ -83,6 +88,9 @@ class ReportIncident extends Component{
                 </div>
                 <div>
                 <input type="radio" value="CarAccident" name="incident"/> Car Accident
+                </div>
+                <div>
+                <input type="radio" value="RoadMaintenance" name="incident"/> Road Maintenance
                 </div>
             </div>
             <button onClick={this.onsubmit} type="submit">
