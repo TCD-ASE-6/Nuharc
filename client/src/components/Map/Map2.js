@@ -51,14 +51,17 @@ class Map2 extends React.Component {
     } catch (error) {
       console.log(error);
     }
-    data = await JSON.parse(data.text())
-    // let polyline = new maps.Polyline({
-    //   path: getPolyLineFromRoute(currentRoute),
-    //   geodesic: true,
-    //   strokeColor: "#00a1e1",
-    //   strokeOpacity: 1.0,
-    //   strokeWeight: 4,
-    // });
+    data = JSON.parse( await data.text())
+    const currentRoute = data[0];
+    const maps = this.state.maps
+    let polyline = new maps.Polyline({
+      path: this.getPolyLineFromRoute(currentRoute),
+      geodesic: true,
+      strokeColor: "#00a1e1",
+      strokeOpacity: 1.0,
+      strokeWeight: 4,
+    });
+    polyline.setMap(this.state.map);
   }
 
   async setIncidents() {
@@ -87,6 +90,10 @@ class Map2 extends React.Component {
     );
   }
 
+  setMapState(map, maps) {
+    this.setState({maps, map})
+  }
+
   render() {
     return (
       <div style={{ height: "93.5vh", width: "100%" }}>
@@ -106,6 +113,7 @@ class Map2 extends React.Component {
           bootstrapURLKeys={{ key: API_KEY }}
           center={this.state.currentCoordinates}
           yesIWantToUseGoogleMapApiInternals
+          onGoogleApiLoaded={({ map, maps }) => this.setMapState(map, maps)}
         >
           <Marker
             lat={this.state.currentCoordinates.lat}
