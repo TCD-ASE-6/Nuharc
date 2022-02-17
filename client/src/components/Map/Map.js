@@ -12,7 +12,7 @@ import { useSelector } from "react-redux";
 // } from "react-google-maps";
 
 const API_KEY = "AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY";
-
+const google = window.google;
 function get_str(loc) {
   return `${loc.lat},${loc.lng}`;
 }
@@ -41,6 +41,8 @@ function Map() {
   const [getRoutesClicked, setGetRoutesCliked] = useState(false);
   const [map, setMap] = useState(null);
   const [maps, setMaps] = useState(null);
+  //retrieve current list of inicdents from the redux store
+  const incidents = useSelector (state => state.incidents);
 
   // Getting the current location
   var options = {
@@ -65,8 +67,6 @@ function Map() {
     options
   );
 
-  function checkDisasterInRoute(route, disasterLocation) {}
-
   async function getRoutes(from, to) {
     let data = "";
     try {
@@ -90,6 +90,11 @@ function Map() {
       strokeWeight: 4,
     });
 
+    incidents.incidentList.forEach((incident) => {
+      let point = new maps.LatLng(incident.latitude.$numberDecimal,incident.longitude.$numberDecimal)
+      checkDisasterInRoute(point,polyline);
+    });
+
     polyline.setMap(map);
   }
 
@@ -98,8 +103,15 @@ function Map() {
     setMaps(maps);
   }
 
-  //retrieve current list of inicdents from the redux store
-  const incidents = useSelector (state => state.incidents);
+  function checkDisasterInRoute(position,polyline) {
+    if (window.google.maps.geometry.poly.isLocationOnEdge(position, polyline)) {
+      console.log("Disaster in route");
+    }
+    else{
+      console.log("No disaster in route");
+    }
+  }
+
   return (
     <div style={{ height: "93.5vh", width: "100%" }}>
       <button
@@ -112,11 +124,18 @@ function Map() {
       >
         Get Routes
       </button>
+      <button
+        onClick={() =>
+          checkDisasterInRoute()
+        }
+      >
+        Check disaster in route
+      </button>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: API_KEY }}
+        bootstrapURLKeys={{ key: API_KEY ,libraries:['geometry','places','drawing']}}
         center={currentCoordinates}
         defaultZoom={zoom}
-        yesIWantToUseGoogleMapApiInternals
+        yesIWantToUseGoogleMapApiInternals={true}
         onGoogleApiLoaded={({ map, maps }) => setMapState(map, maps)}
       >
         <Marker
