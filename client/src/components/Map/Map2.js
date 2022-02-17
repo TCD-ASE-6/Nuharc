@@ -1,7 +1,8 @@
 import React from "react";
 import GoogleMapReact from "google-map-react";
 import Marker from "./Marker";
-import IncidentMarkerList from "./IncidentMarkerList";
+import axios from 'axios';
+import IncidentMarker from "./IncidentMarker";
 
 const API_KEY = "AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY";
 /* global google */
@@ -34,9 +35,11 @@ class Map2 extends React.Component {
       destinationCoordinates: {
         lat: 53.35600864423722,
         lng: -6.256456570972608
-      } 
+      },
+      incidents: {incidentList: []}
     }
     this.setCurrentPostion();
+    this.setIncidents();
   }
 
   async getRoutes(from, to) {
@@ -56,6 +59,11 @@ class Map2 extends React.Component {
     //   strokeOpacity: 1.0,
     //   strokeWeight: 4,
     // });
+  }
+
+  async setIncidents() {
+    const incidents =  await axios.get('/api/incident/')
+    this.setState({incidents: {incidentList: incidents.data}})
   }
 
   setCurrentPostion() {
@@ -111,8 +119,15 @@ class Map2 extends React.Component {
             name="Destination Location"
             color="red"
           ></Marker>
-          <IncidentMarkerList>
-          </IncidentMarkerList>
+          {this.state.incidents.incidentList.map((incident, i) => (
+            <IncidentMarker
+              key={i}
+              lng={incident.longitude.$numberDecimal}
+              lat={incident.latitude.$numberDecimal}
+              date={incident.date}
+              incidentType={incident.incidentType}
+            />
+          ))}
         </GoogleMapReact>
       </div>
     );
