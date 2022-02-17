@@ -99,7 +99,7 @@ function Map() {
   }
 
   //retrieve current list of inicdents from the redux store
-  const incidents = useSelector (state => state.incidents);
+  const incidents = useSelector(state => state.incidents);
   return (
     <div style={{ height: "93.5vh", width: "100%" }}>
       <button
