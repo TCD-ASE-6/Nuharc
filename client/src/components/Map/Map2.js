@@ -124,7 +124,7 @@ class Map2 extends React.Component {
           center={this.state.currentCoordinates}
           defaultZoom={15}
           bootstrapURLKeys={{ key: API_KEY,
-            libraries:['places', 'geometry', 'drawing', 'visualization']
+            libraries:['geometry','places','drawing']
           }}
           center={this.state.currentCoordinates}
           yesIWantToUseGoogleMapApiInternals

@@ -123,7 +123,7 @@ function Map() {
       </button>
       <GoogleMapReact
         bootstrapURLKeys={{ key: API_KEY,
-          libraries:['places', 'geometry', 'drawing', 'visualization']
+          libraries:['geometry','places','drawing']
         }}
         center={currentCoordinates}
         defaultZoom={zoom}
