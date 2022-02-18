@@ -25,6 +25,10 @@ class Map2 extends React.Component {
     return path;
   }
 
+  checkDisasterInRoute(route, disasterLocation) {
+    console.log('route checking is working');
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -109,10 +113,19 @@ class Map2 extends React.Component {
         >
           Get Routes
         </button>
+        <button
+          onClick={() =>
+            this.checkDisasterInRoute()
+          }
+        >
+          Check Disaster In Route
+        </button>
         <GoogleMapReact
           center={this.state.currentCoordinates}
           defaultZoom={15}
-          bootstrapURLKeys={{ key: API_KEY }}
+          bootstrapURLKeys={{ key: API_KEY,
+            libraries:['places', 'geometry', 'drawing', 'visualization']
+          }}
           center={this.state.currentCoordinates}
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({ map, maps }) => this.setMapState(map, maps)}
