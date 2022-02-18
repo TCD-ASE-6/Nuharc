@@ -65,7 +65,9 @@ function Map() {
     options
   );
 
-  function checkDisasterInRoute(route, disasterLocation) {}
+  function checkDisasterInRoute(route, disasterLocation) {
+    console.log('route checking is working');
+  }
 
   async function getRoutes(from, to) {
     let data = "";
@@ -112,8 +114,17 @@ function Map() {
       >
         Get Routes
       </button>
+      <button
+        onClick={() =>
+          checkDisasterInRoute()
+        }
+      >
+        Check Disaster In Route
+      </button>
       <GoogleMapReact
-        bootstrapURLKeys={{ key: API_KEY }}
+        bootstrapURLKeys={{ key: API_KEY,
+          libraries:['places', 'geometry', 'drawing', 'visualization']
+        }}
         center={currentCoordinates}
         defaultZoom={zoom}
         yesIWantToUseGoogleMapApiInternals

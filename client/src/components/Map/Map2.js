@@ -36,7 +36,7 @@ class Map2 extends React.Component {
         lat: 53.35600864423722,
         lng: -6.256456570972608
       },
-      incidents: {incidentList: []}
+      incidents: { incidentList: [] }
     }
     this.setCurrentPostion();
     this.setIncidents();
@@ -51,7 +51,7 @@ class Map2 extends React.Component {
     } catch (error) {
       console.log(error);
     }
-    data = JSON.parse( await data.text())
+    data = JSON.parse(await data.text())
     const currentRoute = data[0];
     const maps = this.state.maps
     let polyline = new maps.Polyline({
@@ -65,12 +65,12 @@ class Map2 extends React.Component {
   }
 
   async setIncidents() {
-    const incidents =  await axios.get('/api/incident/')
-    this.setState({incidents: {incidentList: incidents.data}})
+    const incidents = await axios.get('/api/incident/')
+    this.setState({ incidents: { incidentList: incidents.data } })
   }
 
   setCurrentPostion() {
-     // Getting the current location
+    // Getting the current location
     const options = {
       enableHighAccuracy: true,
       timeout: 5000,
@@ -78,10 +78,12 @@ class Map2 extends React.Component {
     };
     navigator.geolocation.watchPosition(
       (position) => {
-        this.setState({currentCoordinates: {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        }})
+        this.setState({
+          currentCoordinates: {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }
+        })
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -91,7 +93,7 @@ class Map2 extends React.Component {
   }
 
   setMapState(map, maps) {
-    this.setState({maps, map})
+    this.setState({ maps, map })
   }
 
   render() {
