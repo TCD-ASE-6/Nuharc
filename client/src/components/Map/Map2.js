@@ -1,4 +1,9 @@
 import React from "react";
+import GoogleMapReact from "google-map-react";
+import Marker from "./Marker";
+import axios from 'axios';
+import IncidentMarker from "./IncidentMarker";
+
 const API_KEY = "AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY";
 /* global google */
 
@@ -20,44 +25,25 @@ class Map2 extends React.Component {
     return path;
   }
 
-  componentDidMount() {
-    const [currentCoordinates, setCurrentCoordinates] = useState(0);
-    const [destinationCoordinates, setDestinationCoordinates] = useState(0);
-    const [allRoutes, setAllRoutes] = useState(0);
-    const [currentRoute, setCurrentRoute] = useState(0);
-    const [currentRouteIndex, setCurrentRouteIndex] = useState(0);
-    const [countOfRoutes, setCountOfRoutes] = useState(0);
-    const [zoom, setZoom] = useState(15);
-    const [showDirections, setShowDirections] = useState(false);
-    const [getRoutesClicked, setGetRoutesCliked] = useState(false);
-    const [map, setMap] = useState(null);
-    const [maps, setMaps] = useState(null);
-    this.setCurrentPostion();
+  checkDisasterInRoute(route, disasterLocation) {
+    console.log('route checking is working');
   }
 
-  setCurrentPostion() {
-    // Getting the current location
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 5000
-    };
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setCurrentCoordinates({
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        });
-        setDestinationCoordinates({
-          lat: 53.35460864423722,
-          lng: -6.256456570972608,
-        });
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentCoordinates: {
+        lat: 53.36460864423722,
+        lng: -6.256456570972608,
       },
-      function error(err) {
-        console.log(err)
-        console.error(`ERROR(${err.code}): ${err.message}`);
+      destinationCoordinates: {
+        lat: 53.35600864423722,
+        lng: -6.256456570972608
       },
-      options
-    );
+      incidents: { incidentList: [] }
+    }
+    this.setCurrentPostion();
+    this.setIncidents();
   }
 
   async getRoutes(from, to) {
@@ -70,56 +56,101 @@ class Map2 extends React.Component {
       console.log(error);
     }
     data = JSON.parse(await data.text())
-    setAllRoutes(data);
-    setCountOfRoutes(data.length);
-    setCurrentRouteIndex(0);
-    setCurrentRoute(data[currentRouteIndex]);
-
+    const currentRoute = data[0];
+    const maps = this.state.maps
     let polyline = new maps.Polyline({
-      path: getPolyLineFromRoute(currentRoute),
+      path: this.getPolyLineFromRoute(currentRoute),
       geodesic: true,
       strokeColor: "#00a1e1",
       strokeOpacity: 1.0,
       strokeWeight: 4,
     });
+    polyline.setMap(this.state.map);
+  }
 
-    polyline.setMap(map);
+  async setIncidents() {
+    const incidents = await axios.get('/api/incident/')
+    this.setState({ incidents: { incidentList: incidents.data } })
+  }
+
+  setCurrentPostion() {
+    // Getting the current location
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
+    };
+    navigator.geolocation.watchPosition(
+      (position) => {
+        this.setState({
+          currentCoordinates: {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          }
+        })
+      },
+      function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+      },
+      options
+    );
+  }
+
+  setMapState(map, maps) {
+    this.setState({ maps, map })
   }
 
   render() {
     return (
       <div style={{ height: "93.5vh", width: "100%" }}>
-        <Autocomplete
-          onPlaceSelected={(place) => console.log(place)}
-        />
         <button
           onClick={() =>
-            getRoutes(
-              get_str(currentCoordinates),
-              get_str(destinationCoordinates)
+            this.getRoutes(
+              this.get_str(this.state.currentCoordinates),
+              this.get_str(this.state.destinationCoordinates)
             )
           }
         >
           Get Routes
         </button>
+        <button
+          onClick={() =>
+            this.checkDisasterInRoute()
+          }
+        >
+          Check Disaster In Route
+        </button>
         <GoogleMapReact
-          center={currentCoordinates}
-          defaultZoom={zoom}
+          center={this.state.currentCoordinates}
+          defaultZoom={15}
+          bootstrapURLKeys={{ key: API_KEY,
+            libraries:['geometry','places','drawing']
+          }}
+          center={this.state.currentCoordinates}
           yesIWantToUseGoogleMapApiInternals
-          onGoogleApiLoaded={({ map, maps }) => setMapState(map, maps)}
+          onGoogleApiLoaded={({ map, maps }) => this.setMapState(map, maps)}
         >
           <Marker
-            lat={currentCoordinates.lat}
-            lng={currentCoordinates.lng}
+            lat={this.state.currentCoordinates.lat}
+            lng={this.state.currentCoordinates.lng}
             name="Current Location"
             color="blue"
           ></Marker>
           <Marker
-            lat={destinationCoordinates.lat}
-            lng={destinationCoordinates.lng}
+            lat={this.state.destinationCoordinates.lat}
+            lng={this.state.destinationCoordinates.lng}
             name="Destination Location"
             color="red"
           ></Marker>
+          {this.state.incidents.incidentList.map((incident, i) => (
+            <IncidentMarker
+              key={i}
+              lng={incident.longitude.$numberDecimal}
+              lat={incident.latitude.$numberDecimal}
+              date={incident.date}
+              incidentType={incident.incidentType}
+            />
+          ))}
         </GoogleMapReact>
       </div>
     );
