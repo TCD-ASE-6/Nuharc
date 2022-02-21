@@ -92,7 +92,12 @@ function Map() {
 
     incidents.incidentList.forEach((incident) => {
       let point = new maps.LatLng(incident.latitude.$numberDecimal,incident.longitude.$numberDecimal)
-      checkDisasterInRoute(point,polyline);
+      if(checkDisasterInRoute(point,polyline)){
+
+      }
+      else{
+
+      }
     });
 
     polyline.setMap(map);
@@ -104,11 +109,14 @@ function Map() {
   }
 
   function checkDisasterInRoute(position,polyline) {
+    
     if (window.google.maps.geometry.poly.isLocationOnEdge(position, polyline)) {
       console.log("Disaster in route");
+      return true; 
     }
     else{
       console.log("No disaster in route");
+      return false;
     }
   }
 
