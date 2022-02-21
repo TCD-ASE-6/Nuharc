@@ -93,10 +93,11 @@ function Map() {
     incidents.incidentList.forEach((incident) => {
       let point = new maps.LatLng(incident.latitude.$numberDecimal,incident.longitude.$numberDecimal)
       if(checkDisasterInRoute(point,polyline)){
-
+        findNearestRoads(point,polyline)
       }
       else{
-
+        //test
+        
       }
     });
 
@@ -106,6 +107,26 @@ function Map() {
   function setMapState(map, maps) {
     setMap(map);
     setMaps(maps);
+  }
+
+
+  function findNearestRoads(position,polyline) {
+  
+    console.log('findNearestRoads function is working..');
+    
+    // test
+    currentCoordinates= {
+      lat: 53.36460864423722,
+      lng: -6.256456570972608,
+    };
+
+    // Google Roads API 
+    var config = {
+      method: 'get',
+      url: 'https://roads.googleapis.com/v1/nearestRoads?points=addPoint&key=AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY',
+      headers: { }
+    };
+
   }
 
   function checkDisasterInRoute(position,polyline) {
