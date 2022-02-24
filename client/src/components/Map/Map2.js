@@ -4,7 +4,7 @@ import Marker from "./Marker";
 import axios from 'axios';
 import IncidentMarker from "./IncidentMarker";
 
-const API_KEY = "AIzaSyAK7fU7K5MEJieLeb91s-1ujV87tcUp6VY";
+const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
 /* global google */
 
 class Map2 extends React.Component {
