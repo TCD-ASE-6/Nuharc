@@ -34,6 +34,7 @@ class NavBar extends React.Component {
               <Nav className="me-auto">
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/map">Map</Nav.Link>
+                <Nav.Link href="/heremap">HereMap</Nav.Link>
                 <Nav.Link href="/report">Report Incident</Nav.Link>
               </Nav>
               <Nav>
