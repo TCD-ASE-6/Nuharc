@@ -37,6 +37,7 @@
     "mongoose": "^6.1.7",
     "passport": "^0.5.2",
     "passport-jwt": "^4.0.0",
+    "react-places-autocomplete": "^7.3.0",
     "react-scripts": "^5.0.0",
     "request": "^2.81.0",
     "validator": "^13.7.0",

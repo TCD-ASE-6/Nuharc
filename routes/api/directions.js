@@ -30,6 +30,7 @@ router.get("/getRoute", async (req, res) => {
         route_decoded = polyline.decode(route.overview_polyline.points);
         wayPoints.push(route_decoded);
       });
+      console.log(wayPoints);
       res.send(wayPoints);
     })
     .catch(function (error) {
