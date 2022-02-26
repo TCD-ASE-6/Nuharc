@@ -37,6 +37,7 @@ class Map2 extends React.Component {
       },
       incidents: { incidentList: [] },
       address: "",
+      polyline: null,
     };
     this.setCurrentPostion();
     this.setIncidents();
@@ -48,7 +49,14 @@ class Map2 extends React.Component {
     this.setState({ address: value });
     this.setState({ destinationCoordinates: latLng });
     this.setState({ currentRoute: null });
-    this.setPolyline();
+    this.clearPolyLine();
+  }
+
+  clearPolyLine() {
+    // const maps = this.state.maps;
+    // let polyline = new maps.Polyline();
+    // polyline.setMap(null);
+    this.state.polyline.setMap(null);
   }
 
   setPolyline() {
@@ -60,7 +68,8 @@ class Map2 extends React.Component {
       strokeOpacity: 1.0,
       strokeWeight: 4,
     });
-    polyline.setMap(this.state.map);
+    this.setState({ polyline: polyline });
+    this.state.polyline.setMap(this.state.map);
   }
 
   async getRoutes(from, to) {
@@ -124,6 +133,16 @@ class Map2 extends React.Component {
 
   setMapState(map, maps) {
     this.setState({ maps, map });
+    // let polyline = new maps.Polyline({
+    //   path: this.getPolyLineFromRoute(this.state.currentRoute),
+    //   geodesic: true,
+    //   strokeColor: "#00a1e1",
+    //   strokeOpacity: 1.0,
+    //   strokeWeight: 4,
+    // });
+    // this.setState({
+    //   polyline:
+    // })
   }
 
   setAddress(address) {
