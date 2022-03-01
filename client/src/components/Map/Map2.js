@@ -1,5 +1,6 @@
 import React from "react";
 import GoogleMapReact from "google-map-react";
+import { fitBounds } from 'google-map-react';
 import Marker from "./Marker";
 import axios from "axios";
 import IncidentMarker from "./IncidentMarker";
@@ -9,6 +10,7 @@ import PlacesAutocomplete, {
 } from "react-places-autocomplete";
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
+const DEFAULT_ZOOM = 15
 /* global google */
 
 class Map2 extends React.Component {
@@ -17,26 +19,30 @@ class Map2 extends React.Component {
   }
 
   getPolyLineFromRoute(route) {
-    var path = [];
-    console.log(route);
-    route.map((coordinate, idx) => {
-      path.push({
-        lat: coordinate[0],
-        lng: coordinate[1],
+    const path = [];
+    if(route) {
+      route.map((coordinate, idx) => {
+        path.push({
+          lat: coordinate[0],
+          lng: coordinate[1],
+        });
       });
-    });
-    return path;
+      return path;
+    }
   }
 
   constructor(props) {
     super(props);
+    const currentCoordinates = {
+      lat: 53.36460864423722,
+      lng: -6.256456570972608,
+    }
     this.state = {
-      currentCoordinates: {
-        lat: 53.36460864423722,
-        lng: -6.256456570972608,
-      },
+      currentCoordinates,
       incidents: { incidentList: [] },
       address: "",
+      center: currentCoordinates,
+      zoom: DEFAULT_ZOOM
     };
     this.setCurrentPostion();
     this.setIncidents();
@@ -48,7 +54,39 @@ class Map2 extends React.Component {
     this.setState({ address: value });
     this.setState({ destinationCoordinates: latLng });
     this.setState({ currentRoute: null });
-    this.setPolyline();
+    this.reConfigureZoom()
+    this.resetPolyLine();
+  }
+
+  /**
+   * Reconfigures zoom and center based on current coordinates and destinatation coordinates
+   */
+
+  reConfigureZoom() {
+    if(this.state.destinationCoordinates) {
+      const bounds = {
+        ne: this.state.currentCoordinates,
+        sw: this.state.destinationCoordinates
+      };
+      // Height and Width are in pixels
+      const size = {
+        width: 1420, 
+        height: 720,
+      };
+      const {center, zoom} = fitBounds(bounds, size)
+      this.setState({center, zoom})
+    }
+  }
+
+  /**
+   * Resetting existing PolyLine for map
+   */
+  resetPolyLine() {
+    const currentPolyLine = this.state.polyline;
+    if(currentPolyLine){
+      currentPolyLine.setMap(null);
+      this.setState({polyline: null})
+    }
   }
 
   setPolyline() {
@@ -61,6 +99,7 @@ class Map2 extends React.Component {
       strokeWeight: 4,
     });
     polyline.setMap(this.state.map);
+    this.setState({polyline});
   }
 
   async getRoutes(from, to) {
@@ -79,15 +118,6 @@ class Map2 extends React.Component {
     const currentRoute = data[0];
     this.setState({ currentRoute: currentRoute });
     this.setPolyline();
-    // const maps = this.state.maps;
-    // let polyline = new maps.Polyline({
-    //   path: this.getPolyLineFromRoute(currentRoute),
-    //   geodesic: true,
-    //   strokeColor: "#00a1e1",
-    //   strokeOpacity: 1.0,
-    //   strokeWeight: 4,
-    // });
-    // polyline.setMap(this.state.map);
   }
 
   async setIncidents() {
@@ -104,15 +134,14 @@ class Map2 extends React.Component {
     };
     navigator.geolocation.watchPosition(
       (position) => {
+        const lat = position.coords.latitude
+        const lng = position.coords.longitude
         this.setState({
           currentCoordinates: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
+            lat,
+            lng
           },
-          coordinates: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          },
+          center: {lat,lng}
         });
       },
       function error(err) {
@@ -127,7 +156,7 @@ class Map2 extends React.Component {
   }
 
   setAddress(address) {
-    this.setState({ address: address });
+    this.setState({address})
   }
 
   render() {
@@ -145,8 +174,6 @@ class Map2 extends React.Component {
             loading,
           }) => (
             <div>
-              {/* <p>Latitude: {this.state.coordinates.lat}</p>
-              <p>Longitude: {this.state.coordinates.lng}</p> */}
               <input
                 {...getInputProps({
                   placeholder: "Search Places ...",
@@ -189,10 +216,10 @@ class Map2 extends React.Component {
           Get Routes
         </button>
         <GoogleMapReact
-          center={this.state.currentCoordinates}
-          defaultZoom={15}
+          center={this.state.center}
+          defaultZoom={DEFAULT_ZOOM}
+          zoom={this.state.zoom}
           bootstrapURLKeys={{ key: API_KEY }}
-          center={this.state.currentCoordinates}
           yesIWantToUseGoogleMapApiInternals
           onGoogleApiLoaded={({ map, maps }) => this.setMapState(map, maps)}
         >
@@ -227,73 +254,3 @@ class Map2 extends React.Component {
 }
 
 export default Map2;
-
-/*
-import React, { useState } from "react";
-import PlacesAutocomplete, {
-  geocodeByAddress,
-  getLatLng,
-} from "react-places-autocomplete";
- 
-const AutocompleteAddress = () => {
- 
-  const [address, setAddress] = useState("");
-  const [coordinates, setCoordinates] = useState({lat: null, lng: null});
- 
-  const handleSelect = async (value) => {
-    const results = await geocodeByAddress(value);
-    const latLng = await getLatLng(results[0]);
-    setAddress(value);
-    setCoordinates(latLng);
-  };
-    return (
-      <PlacesAutocomplete
-      value={address}
-      onChange={setAddress}
-      onSelect={handleSelect}
-      >
-        {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-          <div>
-            <p>Latitude: {coordinates.lat}</p>
-            <p>Latitude: {coordinates.lng}</p>
-            <input
-              {...getInputProps({
-                placeholder: 'Search Places ...',
-                className: 'location-search-input',
-              })}
-            />
-            <div className="autocomplete-dropdown-container">
-              {loading && <div>Loading...</div>}
-              {suggestions.map(suggestion => {
-                const className = suggestion.active
-                  ? 'suggestion-item--active'
-                  : 'suggestion-item';
-                // inline style for demonstration purpose
-                const style = suggestion.active
-                  ? { backgroundColor: '#fafafa', cursor: 'pointer' }
-                  : { backgroundColor: '#ffffff', cursor: 'pointer' };
-                return (
-                  <div
-                    {...getSuggestionItemProps(suggestion, {
-                      className,
-                      style,
-                    })}
-                  >
-                    <span>{suggestion.description}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-      </PlacesAutocomplete>
-    );
-  }
-
-export default AutocompleteAddress;
-
-
-
-53.3416073,-6.2532367
-53.3540377,-6.2564218
-*/
