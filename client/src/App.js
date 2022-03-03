@@ -9,9 +9,9 @@ import store from "./store";
 import NavBar from './components/NavBar/NavBar';
 import LoginPage from "./components/LoginPage/LoginPage";
 import SignUp from "./components/RegisterPage/SignUp";
+import Map3 from "./components/Map/Map3";
 import Map2 from "./components/Map/Map2";
 import Map from "./components/Map/Map";
-import HereMapClass from "./HereMapClass";
 import ReportIncident from "./components/ReportIncident/ReportIncident";
 
 
@@ -22,9 +22,8 @@ function App() {
       <Router>
         <NavBar />
         <Routes>
-          <Route exact path='/' exact element={<Map2 />} />
-          <Route path='/map' element={<Map />} />
-          <Route path='/hereMap' element={<HereMapClass />} />
+          <Route exact path='/' exact element={<Map3 />} />
+          <Route path='/map' element={<Map3 />} />
           <Route path='/login' element={<LoginPage />} />
           <Route path='/signup' element={<SignUp />} />
           <Route path='/report' element={<ReportIncident />} />
