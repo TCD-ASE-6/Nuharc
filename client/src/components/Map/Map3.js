@@ -12,6 +12,12 @@ const DUBLIN_LNG = -6.276456570972608;
 const INITIAL_ZOOM = 13;
 // Transport mode for the HERE map API
 const TRANSPORT_MODE = "car";
+//
+const ROUTING_MODE = "fast";
+//
+const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
+//
+const AUTOCOMPLETE_MAX_RESULTS = 5;
 // Element Id of the search suggestions
 const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
 // Element Id of the search suggestions
@@ -137,8 +143,8 @@ export default class Map3 extends React.Component {
         console.log(searchString);
         let params = "?query=" + searchString +
         "&apiKey=" + API_KEY +
-        "&maxresults=" + "5" +
-        "&country=" + "IRL" +
+        "&maxresults=" + AUTOCOMPLETE_MAX_RESULTS +
+        "&country=" + AUTOCOMPLETE_COUNTRY_CODE +
         "&beginHighlight=<strong>" +
         "&endHighlight=</strong>";
 
@@ -244,12 +250,19 @@ export default class Map3 extends React.Component {
      */
     async calculateRoute() {
         let routingParameters = {
-            'routingMode': 'fast',
+            'routingMode': ROUTING_MODE,
             'transportMode': TRANSPORT_MODE,
             'origin': this.state.currentCoordinates.lat + ',' + this.state.currentCoordinates.lng,
             'destination': this.state.destinationCoordinates.lat + ',' + this.state.destinationCoordinates.lng,
+            'avoid[areas]': 'bbox:-6.253422,53.399276,-6.198502,53.424229',
+            //'avoid[features]':"controlledAccessHighway,tunnel",
             'return': 'polyline'
         };
+
+        for (const incident of this.state.incidents.incidentList){
+            console.log("longitude: " + incident.longitude.$numberDecimal + ", latitude: " + incident.latitude.$numberDecimal +
+            ", " + incident.date);
+        }
 
         if(this.state.router) {
             this.state.router.calculateRoute(routingParameters, this.onRoutingResult,
