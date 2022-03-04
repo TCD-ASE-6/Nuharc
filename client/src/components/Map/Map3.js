@@ -11,12 +11,12 @@ const DUBLIN_LNG = -6.276456570972608;
 // Initial zoom factor of the map
 const INITIAL_ZOOM = 13;
 // Transport mode for the HERE map API
-const TRANSPORT_MODE = "car";
-//
+const TRANSPORT_MODE = "pedestrian";
+// Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-//
+// Routing mode for the HERE map API
 const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
-//
+// Max retrieved results for autocompletion
 const AUTOCOMPLETE_MAX_RESULTS = 5;
 // Element Id of the search suggestions
 const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
@@ -89,8 +89,8 @@ export default class Map3 extends React.Component {
 
         this.setCurrentPostion();
         this.setIncidents();
-        this.setState({router: platform.getRoutingService(null, 8), map: map});
 
+        this.setState({router: platform.getRoutingService(null, 8), map: map});
     }
 
     /**
@@ -140,7 +140,6 @@ export default class Map3 extends React.Component {
       * @param {*} searchString
       */
     autocomplete(searchString) {
-        console.log(searchString);
         let params = "?query=" + searchString +
         "&apiKey=" + API_KEY +
         "&maxresults=" + AUTOCOMPLETE_MAX_RESULTS +
@@ -151,6 +150,7 @@ export default class Map3 extends React.Component {
         this.autocompleteRequest.open("GET", "https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json" + params);
         this.autocompleteRequest.send();
     }
+
     /**
      *
      * @param {*} event details of the occurred event
@@ -199,10 +199,11 @@ export default class Map3 extends React.Component {
     }
 
     /**
-     * Callback when the autocomplete fails. Can add failure response here
+     * Callback when the autocomplete fails
      *
      */
     onAutoCompleteFailure(){
+        //TODO: add failure handling
         console.log("autocomplete failed");
     }
 
@@ -243,18 +244,33 @@ export default class Map3 extends React.Component {
         }
     }
 
+    calculateDisasterArea(orgiLat,origLng,height,width){
+
+    }
+
     /**
      * This function calculates a route from the current position of the user to ...
      * and displays the calculated route on the map.
      *
      */
     async calculateRoute() {
+
+        let disasterAreas = "";
+        for(const incident of this.state.incidents.incidentList){
+            let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.0010000;
+            let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
+            let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
+            let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
+            disasterAreas += "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+        }
+
+        console.log(disasterAreas);
         let routingParameters = {
             'routingMode': ROUTING_MODE,
             'transportMode': TRANSPORT_MODE,
             'origin': this.state.currentCoordinates.lat + ',' + this.state.currentCoordinates.lng,
             'destination': this.state.destinationCoordinates.lat + ',' + this.state.destinationCoordinates.lng,
-            'avoid[areas]': 'bbox:-6.253422,53.399276,-6.198502,53.424229',
+            'avoid[areas]': disasterAreas,
             //'avoid[features]':"controlledAccessHighway,tunnel",
             'return': 'polyline'
         };
