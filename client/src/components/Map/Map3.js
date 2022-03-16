@@ -277,11 +277,6 @@ export default class Map3 extends React.Component {
             'return': 'polyline'
         };
 
-        for (const incident of this.state.incidents.incidentList){
-            console.log("longitude: " + incident.longitude.$numberDecimal + ", latitude: " + incident.latitude.$numberDecimal +
-            ", " + incident.date);
-        }
-
         if(this.state.router) {
             this.state.router.calculateRoute(routingParameters, this.onRoutingResult,
                 function(error) {
