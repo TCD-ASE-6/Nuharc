@@ -22,6 +22,8 @@ const AUTOCOMPLETE_MAX_RESULTS = 5;
 const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
 // Element Id of the search suggestions
 const SEARCH_BAR_ID = "searchBarId";
+// Element Id of the destination span
+const DESTINATION_SPAN_ID = "destinationSpanId"
 
 export default class Map3 extends React.Component {
     mapRef = React.createRef();
@@ -53,6 +55,8 @@ export default class Map3 extends React.Component {
         this.onRoutingResult = this.onRoutingResult.bind(this);
         this.onSearchBarKeyUp = this.onSearchBarKeyUp.bind(this);
         this.onAutoCompleteSuccess = this.onAutoCompleteSuccess.bind(this);
+        this.setCurrentPostion();
+        this.setIncidents();
     }
 
     /**
@@ -87,9 +91,6 @@ export default class Map3 extends React.Component {
         this.autocompleteRequest.addEventListener("error", this.onAutoCompleteFailure);
         this.autocompleteRequest.responseType = "json";
 
-        this.setCurrentPostion();
-        this.setIncidents();
-
         this.setState({router: platform.getRoutingService(null, 8), map: map});
     }
 
@@ -114,7 +115,7 @@ export default class Map3 extends React.Component {
      * This function sets the currentCoordinates state to the current position of the user
      *
      */
-    setCurrentPostion() {
+    async setCurrentPostion() {
         // Getting the current location
        const options = {
          enableHighAccuracy: true,
@@ -174,6 +175,7 @@ export default class Map3 extends React.Component {
                             let innerArr = responseArr[0].result;
                             if(innerArr.length > 0){
                                 document.getElementById(SEARCH_BAR_ID).value = innerArr[0].location.address.label;
+                                document.getElementById(DESTINATION_SPAN_ID).innerHTML = innerArr[0].location.address.label;
                                 let destLat = innerArr[0].location.displayPosition.latitude;
                                 let destLng = innerArr[0].location.displayPosition.longitude;
                                 this.setState({destinationCoordinates: {
@@ -315,6 +317,13 @@ export default class Map3 extends React.Component {
     }
 
     /**
+     * TODO
+     */
+    addUserPositionMarkerToMap() {
+
+    }
+
+    /**
      * This function renders the component to the screen
      *
      */
@@ -322,6 +331,7 @@ export default class Map3 extends React.Component {
         return (
         <div>
             <input type="text" id={SEARCH_BAR_ID} onKeyUp={this.onSearchBarKeyUp}></input>
+            <span>Current Destination: </span><span id ={DESTINATION_SPAN_ID}> </span>
             <ul id={SEARCH_SUGGESTIONS_ID}></ul>
             <button
             onClick={() =>
@@ -330,6 +340,7 @@ export default class Map3 extends React.Component {
             >
             Calculate Route
             </button>
+
             <div ref={this.mapRef} style={{ height: "93.5vh" }}>
             </div>
             {this.state.incidents.incidentList.map((incident, i) => (
