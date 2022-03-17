@@ -2,6 +2,7 @@ import React from "react";
 import axios from 'axios';
 import "./IncidentMarker.css";
 
+
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -315,9 +316,33 @@ export default class Map3 extends React.Component {
      * TODO
      */
     addUserPositionMarkerToMap() {
+       
 
     }
 
+    currentPositionMarker(){
+
+    var options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+    };
+      
+    function success(pos) {
+        var curr_coordinates = pos.coords;
+      
+        console.log(`Current Latitude : ${curr_coordinates.latitude}`);
+        console.log(`Current Longitude: ${curr_coordinates.longitude}`);       
+    }
+      
+    function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+  
+    navigator.geolocation.getCurrentPosition(success, error, options);
+        
+      
+    }
     /**
      * This function renders the component to the screen
      *
@@ -335,7 +360,14 @@ export default class Map3 extends React.Component {
             >
             Calculate Route
             </button>
-
+            <button
+            onClick={() =>
+                this.currentPositionMarker()
+            }
+            >
+            Find Current Location
+            </button>
+            
             <div ref={this.mapRef} style={{ height: "93.5vh" }}>
             </div>
             {this.state.incidents.incidentList.map((incident, i) => (
@@ -346,5 +378,5 @@ export default class Map3 extends React.Component {
           ))}
         </div>
         );
-    }
+    }    
 }
