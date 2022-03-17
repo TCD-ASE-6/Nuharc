@@ -341,6 +341,8 @@ export default class Map3 extends React.Component {
   
     navigator.geolocation.getCurrentPosition(success, error, options);
         
+    var currentM = new this.H.map.Marker({lat: this.state.currentCoordinates.lat, lng: this.state.currentCoordinates.lng});
+    this.state.map.addObject(currentM);  
       
     }
     /**
