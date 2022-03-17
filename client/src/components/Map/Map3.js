@@ -312,13 +312,6 @@ export default class Map3 extends React.Component {
         this.state.map.addObject(incidentMarker);
     }
 
-    /**
-     * TODO
-     */
-    addUserPositionMarkerToMap() {
-       
-
-    }
 
     currentPositionMarker(){
 
