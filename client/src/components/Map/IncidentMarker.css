@@ -24,3 +24,11 @@
 .incidentMarker:hover .incidentMarker-details {
 visibility: visible;
 }
+
+.autosuggestElement{
+    background-color: white;
+}
+
+.autosuggestElement:hover{
+    background-color: wheat;
+}
