@@ -15,7 +15,7 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-// Routing mode for the HERE map API
+// Country code HERE map API
 const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
 // Max retrieved results for autocompletion
 const AUTOCOMPLETE_MAX_RESULTS = 5;
@@ -33,7 +33,7 @@ export default class Map3 extends React.Component {
     H = window.H;
 
     /**
-     * ctor
+     * constructor
      *
      */
     constructor(props) {
@@ -84,7 +84,7 @@ export default class Map3 extends React.Component {
         const behavior = new this.H.mapevents.Behavior(new this.H.mapevents.MapEvents(map));
 
         // Create the default UI components to allow the user to interact with them
-        const ui = this.H.ui.UI.createDefault(map, defaultLayers);
+        this.H.ui.UI.createDefault(map, defaultLayers);
         // add a resize listener to make sure that the map occupies the whole container
         window.addEventListener('resize', () => map.getViewPort().resize());
 
@@ -138,8 +138,8 @@ export default class Map3 extends React.Component {
      }
 
      /**
-      *
-      * @param {*} searchString
+      * This function suggests valid destinations to the user based on the search string.
+      * @param {*} searchString user search query
       */
     autocomplete(searchString) {
         let params = "?query=" + searchString +
@@ -154,8 +154,9 @@ export default class Map3 extends React.Component {
     }
 
     /**
-     *
-     * @param {*} event details of the occurred event
+     * Callback when HERE API returns details of autocompletion 
+     * 
+     * @param {*} event event which contains autocomplete results
      */
     onAutoCompleteSuccess(event){
         let searchSuggestions = document.getElementById(SEARCH_SUGGESTIONS_ID);
@@ -221,8 +222,9 @@ export default class Map3 extends React.Component {
     }
 
     /**
-     *
-     * @param {*} result
+     * Callback whıch contaıns the routıng result from the HERE API
+     * 
+     * @param {*} result answer from the server whıch contaıns the route
      */
     onRoutingResult(result){
         if (result.routes.length) {
@@ -241,15 +243,36 @@ export default class Map3 extends React.Component {
                 // Create a marker for the end point:
                 let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
+                routeLine.id="route_line"
+                startMarker.id="start_point"
+                endMarker.id="end_point"
+                this.removeObjectFromMap("route_line");
+                this.removeObjectFromMap("start_point");
+                this.removeObjectFromMap("end_point");
+
                 // Add the route polyline and the two markers to the map:
                 this.state.map.addObjects([routeLine, startMarker, endMarker]);
             });
         }
     }
 
-    calculateDisasterArea(orgiLat,origLng,height,width){
-
-    }
+    /**
+     * 
+     * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs). 
+     * Throught this function, we can remove the old markers and polylines.
+     * ## ====================== ##
+     * we used the logic from the source below.
+     * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
+     * ## ====================== ##
+     * @param {*} objectID ID of the Object that is removed from the map.
+     */
+    removeObjectFromMap(objectID){
+        for (let object of this.state.map.getObjects()){
+         if (object.id===objectID){
+            this.state.map.removeObject(object);
+            }
+         }
+     }
 
     /**
      * This function calculates a route from the current position of the user to ...
@@ -312,22 +335,25 @@ export default class Map3 extends React.Component {
         this.state.map.addObject(incidentMarker);
     }
 
-
-    currentPositionMarker(){
-
-    var options = {
+    /**
+     * This function calculates the users current locations and,
+     * set the marker on the map to show the current location
+     */
+    setCurrentPositionMarker(){
+    
+        var options = {
         enableHighAccuracy: true,
         timeout: 5000,
         maximumAge: 0
     };
-      
+
     function success(pos) {
         var curr_coordinates = pos.coords;
       
-        console.log(`Current Latitude : ${curr_coordinates.latitude}`);
-        console.log(`Current Longitude: ${curr_coordinates.longitude}`);       
+        console.log(`User set coordinates! Current Latitude : ${curr_coordinates.latitude}`);
+        console.log(`User set coordinates! Current Longitude: ${curr_coordinates.longitude}`);       
     }
-      
+    
     function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
     }
@@ -335,6 +361,8 @@ export default class Map3 extends React.Component {
     navigator.geolocation.getCurrentPosition(success, error, options);
         
     var currentM = new this.H.map.Marker({lat: this.state.currentCoordinates.lat, lng: this.state.currentCoordinates.lng});
+    currentM.id="current_position"
+    this.removeObjectFromMap("current_position");
     this.state.map.addObject(currentM);  
       
     }
@@ -357,7 +385,7 @@ export default class Map3 extends React.Component {
             </button>
             <button
             onClick={() =>
-                this.currentPositionMarker()
+                this.setCurrentPositionMarker()
             }
             >
             Find Current Location
