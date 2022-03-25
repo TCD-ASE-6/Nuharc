@@ -1,6 +1,6 @@
 import React from "react";
 import axios from 'axios';
-import "./IncidentMarker.css";
+import "./MapStyle.css";
 
 
 // HERE API key
@@ -320,18 +320,30 @@ export default class Map3 extends React.Component {
      * @param {*} incidentType The type of the incident
      */
     addIncidentMarkerToMap(incidentLat,incidentLng,incidentDate,incidentType) {
-        let incidentElement = document.createElement('div');
-        incidentElement.classList.add('incidentMarker');
 
-        let incidentDetailsElement = document.createElement('span');
+        let innerElement = document.createElement('div');
+        innerElement.style.color = 'black';
+        innerElement.style.width = '30px';
+        innerElement.style.height = '30px';
+        innerElement.style.marginTop = '-10px';
+        innerElement.style.marginLeft = '-10px';
+        innerElement.innerHTML = '⚠';
+
+        let incidentElement = document.createElement('div');
+        let incidentDetailsElement = document.createElement('div');
         incidentDetailsElement.classList.add('incidentMarker-details');
         incidentDetailsElement.textContent = "Date: " + incidentDate + " Incident: " + incidentType;
 
+        incidentElement.classList.add('incidentMarker');
         incidentElement.appendChild(incidentDetailsElement);
-        let incidentMarkerIcon = new this.H.map.DomIcon(incidentElement);
-        let incidentMarker = new this.H.map.DomMarker({lat: incidentLat, lng: incidentLng}, {
-            icon: incidentMarkerIcon
-          });
+        incidentElement.appendChild(innerElement);
+        //create icon
+        var incidentIcon = new this.H.map.DomIcon(incidentElement);
+
+        // create map marker
+        var incidentMarker = new this.H.map.DomMarker({lat: incidentLat, lng: incidentLng}, {
+            icon: incidentIcon
+        });
         this.state.map.addObject(incidentMarker);
     }
 
@@ -340,7 +352,6 @@ export default class Map3 extends React.Component {
      * set the marker on the map to show the current location
      */
     setCurrentPositionMarker(){
-    
         var options = {
         enableHighAccuracy: true,
         timeout: 5000,
@@ -349,23 +360,21 @@ export default class Map3 extends React.Component {
 
     function success(pos) {
         var curr_coordinates = pos.coords;
-      
         console.log(`User set coordinates! Current Latitude : ${curr_coordinates.latitude}`);
-        console.log(`User set coordinates! Current Longitude: ${curr_coordinates.longitude}`);       
+        console.log(`User set coordinates! Current Longitude: ${curr_coordinates.longitude}`);
     }
-    
     function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
     }
-  
+
     navigator.geolocation.getCurrentPosition(success, error, options);
-        
+
     var currentM = new this.H.map.Marker({lat: this.state.currentCoordinates.lat, lng: this.state.currentCoordinates.lng});
     currentM.id="current_position"
     this.removeObjectFromMap("current_position");
-    this.state.map.addObject(currentM);  
-      
+    this.state.map.addObject(currentM);
     }
+
     /**
      * This function renders the component to the screen
      *

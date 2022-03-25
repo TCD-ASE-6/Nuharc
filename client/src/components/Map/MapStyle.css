@@ -2,13 +2,6 @@
     font-size: 0.8em;
 }
 
-.incidentMarker::before {
-    content: "⚠";
-    color: red;
-    font-size: 2em;
-    line-height: 1em;
-}
-
 .incidentMarker .incidentMarker-details {
     visibility: hidden;
     width: 120px;
@@ -18,7 +11,6 @@
     border-radius: 6px;
     padding: 5px 0;
     position: absolute;
-    z-index: 1;
   }
 
 .incidentMarker:hover .incidentMarker-details {
