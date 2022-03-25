@@ -54,6 +54,7 @@ export default class Map3 extends React.Component {
         }
         //bind callbacks
         this.onRoutingResult = this.onRoutingResult.bind(this);
+        this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
         this.onSearchBarKeyUp = this.onSearchBarKeyUp.bind(this);
         this.onAutoCompleteSuccess = this.onAutoCompleteSuccess.bind(this);
         this.setCurrentPostion();
@@ -253,7 +254,7 @@ export default class Map3 extends React.Component {
                 routeLine.id = "route_line"
                 startMarker.id = "start_point"
                 endMarker.id = "end_point"
-                
+
                 // Add the route polyline and the two markers to the map:
                 this.state.map.addObjects([routeLine, startMarker, endMarker]);
             });
@@ -295,7 +296,6 @@ export default class Map3 extends React.Component {
             disasterAreas += "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
         }
 
-        console.log(disasterAreas);
         let routingParameters = {
             'routingMode': ROUTING_MODE,
             'transportMode': TRANSPORT_MODE,
@@ -308,6 +308,51 @@ export default class Map3 extends React.Component {
 
         if (this.state.router) {
             this.state.router.calculateRoute(routingParameters, this.onRoutingResult,
+                function (error) {
+                    alert(error.message);
+                });
+        } else {
+            console.log("Could not calculate route. Router is null");
+        }
+    }
+    /**
+     * Callback which contains the routing result from the HERE API (original route)
+     * TODO: remove duplicate code
+     * @param {*} result answer from the server whıch contains the route
+     */
+    onOriginalRoutingResult(result) {
+        if (result.routes.length) {
+            result.routes[0].sections.forEach((section) => {
+                // Create a linestring to use as a point source for the route line
+                let linestring = this.H.geo.LineString.fromFlexiblePolyline(section.polyline);
+
+                // Create a polyline to display the route:
+                let routeLine = new this.H.map.Polyline(linestring, {
+                    style: { strokeColor: 'grey', lineWidth: 3 }
+                });
+                this.removeObjectFromMap("orig_route_line");
+                routeLine.id = "orig_route_line"
+
+                // Add the route polyline and the two markers to the map:
+                this.state.map.addObjects([routeLine]);
+            });
+        }
+    }
+
+    /**
+     * This function calculates the route without disaster zones
+     */
+    async calculateOriginalRoute() {
+        let routingParameters = {
+            'routingMode': ROUTING_MODE,
+            'transportMode': TRANSPORT_MODE,
+            'origin': this.state.currentCoordinates.lat + ',' + this.state.currentCoordinates.lng,
+            'destination': this.state.destinationCoordinates.lat + ',' + this.state.destinationCoordinates.lng,
+            'return': 'polyline'
+        };
+
+        if (this.state.router) {
+            this.state.router.calculateRoute(routingParameters, this.onOriginalRoutingResult,
                 function (error) {
                     alert(error.message);
                 });
@@ -357,8 +402,8 @@ export default class Map3 extends React.Component {
             lineWidth: 10,
         };
         var circle = new this.H.map.Circle({lat: incidentLat, lng: incidentLng}, 75, { style: circleStyle });
-        
-        this.state.map.addObject(circle)        
+
+        this.state.map.addObject(circle);
     }
 
     /**
@@ -401,7 +446,7 @@ export default class Map3 extends React.Component {
                 <ul id={SEARCH_SUGGESTIONS_ID}></ul>
                 <button
                     onClick={() =>
-                        {this.calculateRoute();}
+                        {this.calculateOriginalRoute(); this.calculateRoute();}
                     }
                 >
                     Calculate Route
