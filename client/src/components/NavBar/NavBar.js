@@ -36,6 +36,7 @@ class NavBar extends React.Component {
                 <Nav.Link href="/map">Map</Nav.Link>
                 <Nav.Link href="/map3">HereMap</Nav.Link>
                 <Nav.Link href="/report">Report Incident</Nav.Link>
+                <Nav.Link href="/update-incident">Admin</Nav.Link>
               </Nav>
               <Nav>
                 <NavDropdown title="Account" id="basic-nav-dropdown">
