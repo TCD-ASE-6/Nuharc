@@ -41,14 +41,14 @@ export default class Map3 extends React.Component {
         this.state = {
             map: null,
             currentCoordinates: {
-            lat: DUBLIN_LAT,
-            lng: DUBLIN_LNG,
+                lat: DUBLIN_LAT,
+                lng: DUBLIN_LNG,
             },
             destinationCoordinates: {
-            lat: 53.35600864423722,
-            lng: -6.256456570972608
+                lat: 53.35600864423722,
+                lng: -6.256456570972608
             },
-            incidents: {incidentList: []},
+            incidents: { incidentList: [] },
             address: "",
             router: null
         }
@@ -92,7 +92,7 @@ export default class Map3 extends React.Component {
         this.autocompleteRequest.addEventListener("error", this.onAutoCompleteFailure);
         this.autocompleteRequest.responseType = "json";
 
-        this.setState({router: platform.getRoutingService(null, 8), map: map});
+        this.setState({ router: platform.getRoutingService(null, 8), map: map });
     }
 
     /**
@@ -108,8 +108,8 @@ export default class Map3 extends React.Component {
      *
      */
     async setIncidents() {
-        const incidents =  await axios.get('/api/incident/')
-        this.setState({incidents: {incidentList: incidents.data}})
+        const incidents = await axios.get('/api/incident/')
+        this.setState({ incidents: { incidentList: incidents.data } })
     }
 
     /**
@@ -118,36 +118,38 @@ export default class Map3 extends React.Component {
      */
     async setCurrentPostion() {
         // Getting the current location
-       const options = {
-         enableHighAccuracy: true,
-         timeout: 5000,
-         maximumAge: 0,
-       };
-       navigator.geolocation.watchPosition(
-         (position) => {
-           this.setState({currentCoordinates: {
-             lat: position.coords.latitude,
-             lng: position.coords.longitude,
-           }})
-         },
-         function error(err) {
-           console.warn(`ERROR(${err.code}): ${err.message}`);
-         },
-         options
-       );
-     }
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0,
+        };
+        navigator.geolocation.watchPosition(
+            (position) => {
+                this.setState({
+                    currentCoordinates: {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude,
+                    }
+                })
+            },
+            function error(err) {
+                console.warn(`ERROR(${err.code}): ${err.message}`);
+            },
+            options
+        );
+    }
 
-     /**
-      * This function suggests valid destinations to the user based on the search string.
-      * @param {*} searchString user search query
-      */
+    /**
+     * This function suggests valid destinations to the user based on the search string.
+     * @param {*} searchString user search query
+     */
     autocomplete(searchString) {
         let params = "?query=" + searchString +
-        "&apiKey=" + API_KEY +
-        "&maxresults=" + AUTOCOMPLETE_MAX_RESULTS +
-        "&country=" + AUTOCOMPLETE_COUNTRY_CODE +
-        "&beginHighlight=<strong>" +
-        "&endHighlight=</strong>";
+            "&apiKey=" + API_KEY +
+            "&maxresults=" + AUTOCOMPLETE_MAX_RESULTS +
+            "&country=" + AUTOCOMPLETE_COUNTRY_CODE +
+            "&beginHighlight=<strong>" +
+            "&endHighlight=</strong>";
 
         this.autocompleteRequest.open("GET", "https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json" + params);
         this.autocompleteRequest.send();
@@ -158,38 +160,40 @@ export default class Map3 extends React.Component {
      * 
      * @param {*} event event which contains autocomplete results
      */
-    onAutoCompleteSuccess(event){
+    onAutoCompleteSuccess(event) {
         let searchSuggestions = document.getElementById(SEARCH_SUGGESTIONS_ID);
         //remove all old suggestions from the list
         searchSuggestions.innerHTML = "";
         //now add the new suggestions
-        try{
+        try {
             for (const suggestion of event.target.response.suggestions) {
                 let suggestionElement = document.createElement("li");
                 suggestionElement.innerHTML = suggestion.label;
                 suggestionElement.classList.add("autosuggestElement");
                 suggestionElement.onclick = () => {
                     let lookupRequest = new XMLHttpRequest();
-                    lookupRequest.addEventListener("load", (event) =>{
+                    lookupRequest.addEventListener("load", (event) => {
                         //unpack response from HERE API which is very complicated for some reason
                         let responseArr = JSON.parse(event.target.response).response.view;
-                        if (responseArr.length > 0){
+                        if (responseArr.length > 0) {
                             let innerArr = responseArr[0].result;
-                            if(innerArr.length > 0){
+                            if (innerArr.length > 0) {
                                 document.getElementById(SEARCH_BAR_ID).value = innerArr[0].location.address.label;
                                 document.getElementById(DESTINATION_SPAN_ID).innerHTML = innerArr[0].location.address.label;
                                 let destLat = innerArr[0].location.displayPosition.latitude;
                                 let destLng = innerArr[0].location.displayPosition.longitude;
-                                this.setState({destinationCoordinates: {
-                                    lat: destLat,
-                                    lng: destLng,
-                                }});
+                                this.setState({
+                                    destinationCoordinates: {
+                                        lat: destLat,
+                                        lng: destLng,
+                                    }
+                                });
                             }
                         }
                     });
                     let params = "?locationid=" + suggestion.locationId +
-                    "&jsonattributes=1" +
-                    "&apiKey=" + API_KEY;
+                        "&jsonattributes=1" +
+                        "&apiKey=" + API_KEY;
                     lookupRequest.open("GET", "https://geocoder.ls.hereapi.com/6.2/geocode.json" + params);
                     lookupRequest.send();
                 };
@@ -197,7 +201,7 @@ export default class Map3 extends React.Component {
                 //add the created element to the list
                 searchSuggestions.appendChild(suggestionElement);
             }
-        } catch(TypeError){
+        } catch (TypeError) {
             //do nothing
         }
     }
@@ -206,7 +210,7 @@ export default class Map3 extends React.Component {
      * Callback when the autocomplete fails
      *
      */
-    onAutoCompleteFailure(){
+    onAutoCompleteFailure() {
         //TODO: add failure handling
         console.log("autocomplete failed");
     }
@@ -216,7 +220,7 @@ export default class Map3 extends React.Component {
      *
      * @param {*} event details of the occurred event
      */
-    onSearchBarKeyUp(event){
+    onSearchBarKeyUp(event) {
         this.autocomplete(event.target.value);
         event.preventDefault();
     }
@@ -226,15 +230,15 @@ export default class Map3 extends React.Component {
      * 
      * @param {*} result answer from the server whıch contaıns the route
      */
-    onRoutingResult(result){
+    onRoutingResult(result) {
         if (result.routes.length) {
             result.routes[0].sections.forEach((section) => {
-                 // Create a linestring to use as a point source for the route line
+                // Create a linestring to use as a point source for the route line
                 let linestring = this.H.geo.LineString.fromFlexiblePolyline(section.polyline);
 
                 // Create a polyline to display the route:
                 let routeLine = new this.H.map.Polyline(linestring, {
-                  style: { strokeColor: 'blue', lineWidth: 3 }
+                    style: { strokeColor: 'blue', lineWidth: 3 }
                 });
 
                 // Create a marker for the start point:
@@ -243,9 +247,9 @@ export default class Map3 extends React.Component {
                 // Create a marker for the end point:
                 let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
-                routeLine.id="route_line"
-                startMarker.id="start_point"
-                endMarker.id="end_point"
+                routeLine.id = "route_line"
+                startMarker.id = "start_point"
+                endMarker.id = "end_point"
                 this.removeObjectFromMap("route_line");
                 this.removeObjectFromMap("start_point");
                 this.removeObjectFromMap("end_point");
@@ -266,13 +270,13 @@ export default class Map3 extends React.Component {
      * ## ====================== ##
      * @param {*} objectID ID of the Object that is removed from the map.
      */
-    removeObjectFromMap(objectID){
-        for (let object of this.state.map.getObjects()){
-         if (object.id===objectID){
-            this.state.map.removeObject(object);
+    removeObjectFromMap(objectID) {
+        for (let object of this.state.map.getObjects()) {
+            if (object.id === objectID) {
+                this.state.map.removeObject(object);
             }
-         }
-     }
+        }
+    }
 
     /**
      * This function calculates a route from the current position of the user to ...
@@ -282,7 +286,7 @@ export default class Map3 extends React.Component {
     async calculateRoute() {
 
         let disasterAreas = "";
-        for(const incident of this.state.incidents.incidentList){
+        for (const incident of this.state.incidents.incidentList) {
             let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.0010000;
             let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
             let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
@@ -301,10 +305,10 @@ export default class Map3 extends React.Component {
             'return': 'polyline'
         };
 
-        if(this.state.router) {
+        if (this.state.router) {
             this.state.router.calculateRoute(routingParameters, this.onRoutingResult,
-                function(error) {
-                  alert(error.message);
+                function (error) {
+                    alert(error.message);
                 });
         } else {
             console.log("Could not calculate route. Router is null");
@@ -345,6 +349,15 @@ export default class Map3 extends React.Component {
             icon: incidentIcon
         });
         this.state.map.addObject(incidentMarker);
+
+        var circleStyle = {
+            strokeColor: "red",
+            fillColor: "rgba(0, 95, 255, 0.1)",
+            lineWidth: 10,
+        };
+        var circle = new this.H.map.Circle({lat: incidentLat, lng: incidentLng}, 75, { style: circleStyle });
+        
+        this.state.map.addObject(circle)        
     }
 
     /**
@@ -381,34 +394,34 @@ export default class Map3 extends React.Component {
      */
     render() {
         return (
-        <div>
-            <input type="text" id={SEARCH_BAR_ID} onKeyUp={this.onSearchBarKeyUp}></input>
-            <span>Current Destination: </span><span id ={DESTINATION_SPAN_ID}> </span>
-            <ul id={SEARCH_SUGGESTIONS_ID}></ul>
-            <button
-            onClick={() =>
-                this.calculateRoute()
-            }
-            >
-            Calculate Route
-            </button>
-            <button
-            onClick={() =>
-                this.setCurrentPositionMarker()
-            }
-            >
-            Find Current Location
-            </button>
-            
-            <div ref={this.mapRef} style={{ height: "93.5vh" }}>
+            <div>
+                <input type="text" id={SEARCH_BAR_ID} onKeyUp={this.onSearchBarKeyUp}></input>
+                <span>Current Destination: </span><span id={DESTINATION_SPAN_ID}> </span>
+                <ul id={SEARCH_SUGGESTIONS_ID}></ul>
+                <button
+                    onClick={() =>
+                        {this.calculateRoute();}
+                    }
+                >
+                    Calculate Route
+                </button>
+                <button
+                    onClick={() =>
+                        this.setCurrentPositionMarker()
+                    }
+                >
+                    Find Current Location
+                </button>
+
+                <div ref={this.mapRef} style={{ height: "93.5vh" }}>
+                </div>
+                {this.state.incidents.incidentList.map((incident, i) => (
+                    this.addIncidentMarkerToMap(incident.latitude.$numberDecimal,
+                        incident.longitude.$numberDecimal,
+                        incident.date,
+                        incident.incidentType)
+                ))}
             </div>
-            {this.state.incidents.incidentList.map((incident, i) => (
-                this.addIncidentMarkerToMap(incident.latitude.$numberDecimal,
-                    incident.longitude.$numberDecimal,
-                    incident.date,
-                    incident.incidentType)
-          ))}
-        </div>
         );
-    }    
+    }
 }
