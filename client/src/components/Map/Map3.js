@@ -247,13 +247,13 @@ export default class Map3 extends React.Component {
                 // Create a marker for the end point:
                 let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
-                routeLine.id = "route_line"
-                startMarker.id = "start_point"
-                endMarker.id = "end_point"
                 this.removeObjectFromMap("route_line");
                 this.removeObjectFromMap("start_point");
                 this.removeObjectFromMap("end_point");
-
+                routeLine.id = "route_line"
+                startMarker.id = "start_point"
+                endMarker.id = "end_point"
+                
                 // Add the route polyline and the two markers to the map:
                 this.state.map.addObjects([routeLine, startMarker, endMarker]);
             });
@@ -278,6 +278,7 @@ export default class Map3 extends React.Component {
         }
     }
 
+    
     /**
      * This function calculates a route from the current position of the user to ...
      * and displays the calculated route on the map.
