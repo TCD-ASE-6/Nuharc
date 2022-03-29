@@ -1,12 +1,14 @@
 import axios from 'axios';
+import Role from '../helpers/role';
 import { LOGIN_USER, SIGNUP_USER, DELETE_USER } from './types';
+
 
 export const loginUser = (user) => (dispatch) => {
     axios.post(`api/users/login`, user).then((res) => {
         dispatch({
             type: LOGIN_USER,
             payload: res.data
-        })
+        });
     });
 };
 

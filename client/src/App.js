@@ -1,6 +1,6 @@
 import "./App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-import React from "react";
+import React, { Component } from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -13,22 +13,47 @@ import Map3 from "./components/Map/Map3";
 import Map2 from "./components/Map/Map2";
 import ReportIncident from "./components/ReportIncident/ReportIncident";
 
-function App() {
-  return (
-    <Provider store={store}>
-      <Router>
-        <NavBar />
-        <Routes>
-          <Route exact path='/' element={<Map3 />} />
-          <Route path='/map' element={<Map2 />} />
-          <Route path='/map3' element={<Map3 />} />
-          <Route path='/login' element={<LoginPage />} />
-          <Route path='/signup' element={<SignUp />} />
-          <Route path='/report' element={<ReportIncident />} />
-        </Routes>
-      </Router>
-    </Provider>
-  );
-}
+import PrivateRoute from "./helpers/PrivateRoute";
 
-export default App;
+// import RoleRedirector from "./helpers/RoleRedirector";
+
+export default class App extends Component {
+  // constructor(props) {
+  //   super(props);
+  //   store.subscribe(this.onStoreUpdate.bind(this));
+  // }
+
+  // onStoreUpdate() {
+  //   let storeUser = store.getState().user;
+  //   console.log(storeUser);
+  //   if (storeUser.user != null) {
+  //     // TODO: write a functional component to redirect users
+  //     { RoleRedirector() }
+  //   }
+  // }
+
+  render() {
+    return (
+      <Provider store={store}>
+        <Router>
+          <NavBar />
+          <Routes>
+            {/* <Route exact path="/" element={<Map3 />} />
+            <Route path="/map" element={<Map2 />} />
+            <Route path="/map3" element={<Map3 />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/report" element={<ReportIncident />} /> */}
+
+            <Route exact path="/" element={<Map3 />} />
+            <Route path="/map" element={<Map2 />} />
+            <Route path="/login" element={<PrivateRoute Component={LoginPage} />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/report" element={<PrivateRoute Component={ReportIncident} />} />
+
+          </Routes>
+        </Router>
+      </Provider>
+    );
+  }
+}

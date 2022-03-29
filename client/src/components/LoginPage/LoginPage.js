@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import { Button, Form, FormGroup, Label, Input } from "reactstrap";
 import { loginUser } from "../../actions/userActions";
 import { connect } from "react-redux";
+import Role from "../../helpers/role";
 
 class LoginPage extends Component {
   constructor(props) {
@@ -22,6 +23,7 @@ class LoginPage extends Component {
       password: this.state.password,
       role: this.state.role,
     };
+    
     this.props.loginUser(user);
   };
 
