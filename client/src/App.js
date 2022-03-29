@@ -12,7 +12,8 @@ import SignUp from "./components/RegisterPage/SignUp";
 import Map3 from "./components/Map/Map3";
 import Map2 from "./components/Map/Map2";
 import ReportIncident from "./components/ReportIncident/ReportIncident";
-import UpdateIncident from "./components/UpdateIncident/UpdateIncident.js";
+import UpdateIncident from "./components/UpdateIncident/UpdateIncident";
+import AdminNavigator from "./components/UpdateIncident/AdminNavigator";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path='/signup' element={<SignUp />} />
           <Route path='/report' element={<ReportIncident />} />
           <Route path='/update-incident' element={<UpdateIncident />} />
+          <Route path='/admin-navigator' element={<AdminNavigator />} />
         </Routes>
       </Router>
     </Provider>
