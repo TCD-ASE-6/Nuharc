@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 import {
   Row,
+  Button,
   Col,
   Container,
   ListGroup,
@@ -22,16 +23,20 @@ function UpdateIncident() {
   }, []);
 
   const getAllIncidents = async () => {
+    // TODO: add sort by distance
     const incidents = await axios.get("/api/incident/");
     setIncidentList(incidents.data);
     console.log(incidentList);
   };
 
-  const onsubmit = async (id) => {
-    console.log(id);
+  const onsubmit = async (incident) => {
+    console.log(incident.id);
+    const latitude = incident.longitude.$numberDecimal;
+    const longitude = incident.latitude.$numberDecimal;
+    // TODO: fix API
     // const response = await axios.put("/api/incident/" + id, {});
     // console.log(response);
-    navigate('/admin-navigator');
+    navigate("/admin-navigator", { state: { longitude, latitude } });
   };
 
   return (
@@ -55,9 +60,9 @@ function UpdateIncident() {
             </Col>
             <Col>
               {" "}
-              <button onClick={() => onsubmit(incident._id)} type="submit">
-                Submit
-              </button>
+              <Button color="success" onClick={() => onsubmit(incident)} type="submit">
+                Set Active
+              </Button>
             </Col>
           </Row>
         ))}
