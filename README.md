@@ -1,6 +1,6 @@
 # Nuharc  
 
-## Importants
+## Important
 convert class components to functional components (https://nimblewebdeveloper.com/blog/convert-react-class-to-function-component)
 
 create your development cluster on mongodb atlas and add the db uri under config/keys.js (devMongoURI) before proceeding.  
