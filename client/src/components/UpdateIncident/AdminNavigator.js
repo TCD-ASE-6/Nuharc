@@ -5,7 +5,12 @@ import { useLocation } from "react-router-dom";
 function AdminNavigator(props) {
   const location = useLocation();
   return (
-    <Map3 lat={location.state.longitude} lng={location.state.latitude} isFixedRoute={true}></Map3>
+    <Map3
+      lat={location.state.longitude}
+      lng={location.state.latitude}
+      isFixedRoute={true}
+      incident={location.state.incident}
+    ></Map3>
   );
 }
 

@@ -55,6 +55,7 @@ export default class Map3 extends React.Component {
       address: "",
       router: null,
       isFixedRoute: false,
+      incidentAtDestination: {},
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
@@ -120,6 +121,7 @@ export default class Map3 extends React.Component {
           lng: this.props.lng,
         },
         isFixedRoute: true,
+        incidentAtDestination: this.props.incident,
       });
     }
   }
@@ -139,6 +141,13 @@ export default class Map3 extends React.Component {
   async setIncidents() {
     const incidents = await axios.get("/api/incident/");
     this.setState({ incidents: { incidentList: incidents.data } });
+  }
+
+  async setResolved() {
+    let incidentAtDestination = this.state.incidentAtDestination;
+    incidentAtDestination.active = false;
+    const response = await axios.put(`/api/incident/${incidentAtDestination._id}`, incidentAtDestination);
+    console.log(response);
   }
 
   /**
@@ -434,6 +443,9 @@ export default class Map3 extends React.Component {
             <Button color="primary" onClick={() => this.calculateRoute()}>
               Show Route
             </Button>
+            <Button color="info" onClick={() => this.setResolved()} type="submit">
+                Set Resolved
+              </Button>
           </div>
         )}
 

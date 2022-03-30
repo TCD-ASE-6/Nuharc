@@ -36,7 +36,17 @@ function UpdateIncident() {
     // TODO: fix API
     // const response = await axios.put("/api/incident/" + id, {});
     // console.log(response);
-    navigate("/admin-navigator", { state: { longitude, latitude } });
+    navigate("/admin-navigator", { state: { longitude, latitude, incident } });
+  };
+
+  const setResolved = async (incident) => {
+    let incidentAtDestination = incident;
+    incidentAtDestination.active = false;
+    const response = await axios.put(
+      `/api/incident/${incidentAtDestination._id}`,
+      incidentAtDestination
+    );
+    console.log(response);
   };
 
   return (
@@ -60,8 +70,19 @@ function UpdateIncident() {
             </Col>
             <Col>
               {" "}
-              <Button color="success" onClick={() => onsubmit(incident)} type="submit">
+              <Button
+                color="primary"
+                onClick={() => onsubmit(incident)}
+                type="submit"
+              >
                 Set Active
+              </Button>
+              <Button
+                color="success"
+                onClick={() => setResolved(incident)}
+                type="submit"
+              >
+                Set Resolved
               </Button>
             </Col>
           </Row>
