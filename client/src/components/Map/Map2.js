@@ -8,6 +8,7 @@ import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from "react-places-autocomplete";
+import DisasterRouteService from "../../services/disaster-route.service";
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
 const DEFAULT_ZOOM = 15
@@ -19,13 +20,13 @@ class Map2 extends React.Component {
   }
 
   getPolyLineFromRoute(route) {
-    const path = [];
+    let path = [];
     if(route) {
-      route.map((coordinate, idx) => {
-        path.push({
+      path = route.map((coordinate, idx) => {
+       return {
           lat: coordinate[0],
           lng: coordinate[1],
-        });
+        };
       });
       return path;
     }
@@ -64,17 +65,11 @@ class Map2 extends React.Component {
 
   reConfigureZoom() {
     if(this.state.destinationCoordinates) {
-      const bounds = {
-        ne: this.state.currentCoordinates,
-        sw: this.state.destinationCoordinates
-      };
-      // Height and Width are in pixels
-      const size = {
-        width: 1420, 
-        height: 720,
-      };
-      const {center, zoom} = fitBounds(bounds, size)
-      this.setState({center, zoom})
+      const map = this.state.map
+      const bounds = new window.google.maps.LatLngBounds();
+      bounds.extend(this.state.currentCoordinates)
+      bounds.extend(this.state.destinationCoordinates)
+      map.fitBounds(bounds);
     }
   }
 
@@ -103,19 +98,10 @@ class Map2 extends React.Component {
   }
 
   async getRoutes(from, to) {
-    console.log(from);
-    console.log(to);
-    let data = "";
-    try {
-      data = await fetch(
-        `http://localhost:8080/api/directions/getRoute?source=${from}&destination=${to}`
-      );
-    } catch (error) {
-      console.log(error);
-    }
-    data = JSON.parse(await data.text());
-    console.log(data);
-    const currentRoute = data[0];
+    const routeService = new DisasterRouteService();
+    // TODO Move this updwards and access incident list from the service only
+    await routeService.configureIncidentList();
+    const currentRoute = await routeService.getRoute(from, to)
     this.setState({ currentRoute: currentRoute });
     this.setPolyline();
   }
