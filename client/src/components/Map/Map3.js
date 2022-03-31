@@ -4,6 +4,8 @@ import "./IncidentMarker.css";
 
 import { Button } from "reactstrap";
 
+require('dotenv').config();
+
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -149,8 +151,9 @@ export default class Map3 extends React.Component {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(incidentAtDestination),
     };
+    const baseUrl = process.env.BASE_URL;
     const response = await fetch(
-      `http://localhost:3004/api/incident/${incidentAtDestination._id}`,
+      `${baseUrl}/api/incident/${incidentAtDestination._id}`,
       requestOptions
     ).then((response) => {
       console.log(response.json());

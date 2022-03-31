@@ -1,7 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-
 import {
   Row,
   Button,
@@ -12,6 +12,8 @@ import {
   ListGroupItemHeading,
   ListGroupItemText,
 } from "reactstrap";
+
+require('dotenv').config();
 
 function UpdateIncident() {
   let [incidentList, setIncidentList] = useState([]);
@@ -47,8 +49,9 @@ function UpdateIncident() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(incidentAtDestination),
     };
+    const baseUrl = process.env.BASE_URL;
     const response = await fetch(
-      `http://localhost:3004/api/incident/${incidentAtDestination._id}`,
+      `${baseUrl}/api/incident/${incidentAtDestination._id}`,
       requestOptions
     ).then((response) => {
       getAllIncidents();
