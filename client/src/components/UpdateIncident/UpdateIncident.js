@@ -13,7 +13,7 @@ import {
   ListGroupItemText,
 } from "reactstrap";
 
-require('dotenv').config();
+// require('dotenv').config();
 
 function UpdateIncident() {
   let [incidentList, setIncidentList] = useState([]);
@@ -49,7 +49,7 @@ function UpdateIncident() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(incidentAtDestination),
     };
-    const baseUrl = process.env.BASE_URL;
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const response = await fetch(
       `${baseUrl}/api/incident/${incidentAtDestination._id}`,
       requestOptions

@@ -4,7 +4,7 @@ import "./IncidentMarker.css";
 
 import { Button } from "reactstrap";
 
-require('dotenv').config();
+// require('dotenv').config();
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -151,7 +151,7 @@ export default class Map3 extends React.Component {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(incidentAtDestination),
     };
-    const baseUrl = process.env.BASE_URL;
+    const baseUrl = process.env.REACT_APP_BASE_URL;
     const response = await fetch(
       `${baseUrl}/api/incident/${incidentAtDestination._id}`,
       requestOptions
