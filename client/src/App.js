@@ -9,8 +9,10 @@ import store from "./store";
 import NavBar from "./components/NavBar/NavBar";
 import LoginPage from "./components/LoginPage/LoginPage";
 import SignUp from "./components/RegisterPage/SignUp";
+import Map3 from "./components/Map/Map3";
 import Map2 from "./components/Map/Map2";
 import ReportIncident from "./components/ReportIncident/ReportIncident";
+import Signup2 from "./components/RegisterPage/Signup2";
 
 function App() {
   return (
@@ -18,11 +20,12 @@ function App() {
       <Router>
         <NavBar />
         <Routes>
-          <Route exact path="/" element={<Map2 />} />
-          <Route path="/map" element={<Map2 />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/report" element={<ReportIncident />} />
+          <Route exact path='/' element={<Map3 />} />
+          <Route path='/map' element={<Map2 />} />
+          <Route path='/map3' element={<Map3 />} />
+          <Route path='/login' element={<LoginPage />} />
+          <Route path='/signup' element={<Signup2 />} />
+          <Route path='/report' element={<ReportIncident />} />
         </Routes>
       </Router>
     </Provider>
