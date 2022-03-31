@@ -1,5 +1,8 @@
 # Nuharc  
 
+## Important
+convert class components to functional components (https://nimblewebdeveloper.com/blog/convert-react-class-to-function-component)
+
 create your development cluster on mongodb atlas and add the db uri under config/keys.js (devMongoURI) before proceeding.  
 Install React and Redux Extensions on your browsers.  
 The UI can be found under the Client folder.  
