@@ -207,6 +207,19 @@ export default class Map3 extends React.Component {
         }
     }
 
+    createSafeZones(){
+        var circleStyle = {
+            strokeColor: "darkgreen",
+            fillColor: "rgba(0, 188, 71, 0.4)",
+            lineWidth: 10,
+        };
+        
+        var zone = new this.H.map.Circle({lat: 53.33810241909542, lng: -6.2587451872999305}, 200, { style: circleStyle });
+        this.state.map.addObject(zone);
+        var zone = new this.H.map.Circle({lat: 53.33971103377993, lng: -6.249285026362085}, 130, { style: circleStyle });
+        this.state.map.addObject(zone);
+    }
+
     /**
      * Callback when the autocomplete fails
      *
@@ -458,8 +471,16 @@ export default class Map3 extends React.Component {
                 >
                     Find Current Location
                 </button>
+                <button
+                    onClick={() =>
+                        this.createSafeZones()
+                    }
+                >
+                    Show Safe Zones
+                </button>
 
                 <div ref={this.mapRef} style={{ height: "93.5vh" }}>
+                
                 </div>
                 {this.state.incidents.incidentList.map((incident, i) => (
                     this.addIncidentMarkerToMap(incident.latitude.$numberDecimal,
