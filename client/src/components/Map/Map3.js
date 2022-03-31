@@ -24,7 +24,8 @@ const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
 // Element Id of the search suggestions
 const SEARCH_BAR_ID = "searchBarId";
 // Element Id of the destination span
-const DESTINATION_SPAN_ID = "destinationSpanId"
+const DESTINATION_SPAN_ID = "destinationSpanId";
+
 
 export default class Map3 extends React.Component {
     mapRef = React.createRef();
@@ -81,6 +82,10 @@ export default class Map3 extends React.Component {
                 pixelRatio: window.devicePixelRatio || 1
             }
         );
+        // real time traffic information
+        map.addLayer(defaultLayers.vector.normal.traffic);
+        // real time traffic incidents
+        map.addLayer(defaultLayers.vector.normal.trafficincidents);
 
         const behavior = new this.H.mapevents.Behavior(new this.H.mapevents.MapEvents(map));
 
@@ -207,6 +212,10 @@ export default class Map3 extends React.Component {
         }
     }
 
+    /**
+     * show the safe areas on the map
+     *
+     */
     createSafeZones(){
 
         var circleStyle = {
@@ -221,8 +230,15 @@ export default class Map3 extends React.Component {
         var zone = new this.H.map.Circle({lat: 53.33971103377993, lng: -6.249285026362085}, 130, { style: circleStyle });
         zone.id="safe_zone"
         this.state.map.addObject(zone);
+        var zone = new this.H.map.Circle({lat: 53.35674586966649, lng: -6.257488946686209}, 100, { style: circleStyle });
+        zone.id="safe_zone"
+        this.state.map.addObject(zone);
     }
 
+    /**
+     * hide the safe areas on the map
+     *
+     */
     hideSafeZones(){
         this.removeObjectFromMap("safe_zone");
     }
