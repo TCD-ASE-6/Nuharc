@@ -208,6 +208,7 @@ export default class Map3 extends React.Component {
     }
 
     createSafeZones(){
+
         var circleStyle = {
             strokeColor: "darkgreen",
             fillColor: "rgba(0, 188, 71, 0.4)",
@@ -215,10 +216,17 @@ export default class Map3 extends React.Component {
         };
         
         var zone = new this.H.map.Circle({lat: 53.33810241909542, lng: -6.2587451872999305}, 200, { style: circleStyle });
+        zone.id="safe_zone"
         this.state.map.addObject(zone);
         var zone = new this.H.map.Circle({lat: 53.33971103377993, lng: -6.249285026362085}, 130, { style: circleStyle });
+        zone.id="safe_zone"
         this.state.map.addObject(zone);
     }
+
+    hideSafeZones(){
+        this.removeObjectFromMap("safe_zone");
+    }
+
 
     /**
      * Callback when the autocomplete fails
@@ -477,6 +485,13 @@ export default class Map3 extends React.Component {
                     }
                 >
                     Show Safe Zones
+                </button>
+                <button
+                    onClick={() =>
+                        this.hideSafeZones()
+                    }
+                >
+                    Hide Safe Zones
                 </button>
 
                 <div ref={this.mapRef} style={{ height: "93.5vh" }}>
