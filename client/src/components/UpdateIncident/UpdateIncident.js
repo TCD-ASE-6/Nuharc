@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -6,6 +5,8 @@ import {
   Row,
   Button,
   Col,
+  Card,
+  CardBody,
   Container,
   ListGroup,
   ListGroupItem,
@@ -61,11 +62,12 @@ function UpdateIncident() {
 
   return (
     <Container>
+      <br />
       <ListGroup>
         {incidentList.map((incident, i) => (
           <Row className="align-items-center">
             <Col md="10">
-              <ListGroupItem key={i}>
+              <ListGroupItem key={i} color="secondary" >
                 <ListGroupItemHeading key={"head" + i}>
                   {incident.incidentType}{" "}
                 </ListGroupItemHeading>
@@ -79,21 +81,25 @@ function UpdateIncident() {
               </ListGroupItem>
             </Col>
             <Col>
-              {" "}
-              <Button
-                color="primary"
-                onClick={() => onsubmit(incident)}
-                type="submit"
-              >
-                Set Active
-              </Button>
-              <Button
-                color="success"
-                onClick={() => setResolved(incident)}
-                type="submit"
-              >
-                Set Resolved
-              </Button>
+              <ListGroupItem color="secondary">
+                <Button
+                  color="primary"
+                  block
+                  onClick={() => onsubmit(incident)}
+                  type="submit"
+                >
+                  Set Active
+                </Button>
+                <br />
+                <Button
+                  color="success"
+                  block
+                  onClick={() => setResolved(incident)}
+                  type="submit"
+                >
+                  Set Resolved
+                </Button>
+              </ListGroupItem>
             </Col>
           </Row>
         ))}
