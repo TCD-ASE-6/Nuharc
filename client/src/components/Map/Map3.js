@@ -431,6 +431,7 @@ export default class Map3 extends React.Component {
               type="text"
               id={SEARCH_BAR_ID}
               onKeyUp={this.onSearchBarKeyUp}
+              placeholder="Enter Destination"
             ></input>
             <span>Current Destination: </span>
             <span id={DESTINATION_SPAN_ID}> </span>
