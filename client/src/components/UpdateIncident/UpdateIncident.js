@@ -42,10 +42,17 @@ function UpdateIncident() {
   const setResolved = async (incident) => {
     let incidentAtDestination = incident;
     incidentAtDestination.active = false;
-    const response = await axios.put(
-      `/api/incident/${incidentAtDestination._id}`,
-      incidentAtDestination
-    );
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(incidentAtDestination),
+    };
+    const response = await fetch(
+      `http://localhost:3004/api/incident/${incidentAtDestination._id}`,
+      requestOptions
+    ).then((response) => {
+      getAllIncidents();
+    });
     console.log(response);
   };
 

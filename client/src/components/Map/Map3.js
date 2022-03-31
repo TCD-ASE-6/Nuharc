@@ -2,9 +2,7 @@ import React from "react";
 import axios from "axios";
 import "./IncidentMarker.css";
 
-import {
-  Button,
-} from "reactstrap";
+import { Button } from "reactstrap";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -146,8 +144,17 @@ export default class Map3 extends React.Component {
   async setResolved() {
     let incidentAtDestination = this.state.incidentAtDestination;
     incidentAtDestination.active = false;
-    const response = await axios.put(`/api/incident/${incidentAtDestination._id}`, incidentAtDestination);
-    console.log(response);
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(incidentAtDestination),
+    };
+    const response = await fetch(
+      `http://localhost:3004/api/incident/${incidentAtDestination._id}`,
+      requestOptions
+    ).then((response) => {
+      console.log(response.json());
+    });
   }
 
   /**
@@ -443,9 +450,13 @@ export default class Map3 extends React.Component {
             <Button color="primary" onClick={() => this.calculateRoute()}>
               Show Route
             </Button>
-            <Button color="info" onClick={() => this.setResolved()} type="submit">
-                Set Resolved
-              </Button>
+            <Button
+              color="info"
+              onClick={() => this.setResolved()}
+              type="submit"
+            >
+              Set Resolved
+            </Button>
           </div>
         )}
 
