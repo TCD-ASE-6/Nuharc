@@ -2,7 +2,7 @@ import React from "react";
 import axios from "axios";
 import "./IncidentMarker.css";
 
-import { Button } from "reactstrap";
+import { Button, ListGroup, ListGroupItem } from "reactstrap";
 
 // require('dotenv').config();
 
@@ -449,19 +449,23 @@ export default class Map3 extends React.Component {
         )}
 
         {this.state.isFixedRoute && (
-          <div>
-            <h3>Emergency Services Route Director</h3>
-            <Button color="primary" onClick={() => this.calculateRoute()}>
-              Show Route
-            </Button>
-            <Button
-              color="info"
-              onClick={() => this.setResolved()}
-              type="submit"
-            >
-              Set Resolved
-            </Button>
-          </div>
+          <ListGroup>
+            <ListGroupItem color="warning">
+              <div style={{ padding: "5px" }}>
+                <h2>Emergency Services Route Director</h2>
+                <Button color="primary" onClick={() => this.calculateRoute()}>
+                  Show Route
+                </Button>{" "}
+                <Button
+                  color="success"
+                  onClick={() => this.setResolved()}
+                  type="submit"
+                >
+                  Set Resolved
+                </Button>
+              </div>
+            </ListGroupItem>
+          </ListGroup>
         )}
 
         <div ref={this.mapRef} style={{ height: "93.5vh" }}></div>
