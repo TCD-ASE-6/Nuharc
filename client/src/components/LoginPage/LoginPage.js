@@ -1,64 +1,63 @@
-import React, { Component } from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { Button, Form, FormGroup, Label, Input } from "reactstrap";
-import { loginUser } from "../../actions/userActions";
-import { connect } from "react-redux";
 
-class LoginPage extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: "",
-      password: "",
-    };
-    this.loginUser = this.loginUser.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-  }
+function LoginPage() {
+  let [email, setEmail] = useState("");
+  let [password, setPassword] = useState("");
 
-  loginUser = (event) => {
-    event.preventDefault();
+  const loginUser = (e) => {
+    e.preventDefault();
     const user = {
-      email: this.state.email,
-      password: this.state.password
-    }
-    this.props.loginUser(user);
+      email: email,
+      password: password,
+    };
+    loginUserAndStoreInCookie(user);
   };
 
-  handleChange = (e) => {
-    console.log(e.target.value);
-    this.setState({ [e.target.name]: e.target.value });
+  const loginUserAndStoreInCookie = async (user) => {
+    axios.post(`/api/users/login`, user).then((response) => {
+      const userDetails = response.json();
+      // TODO: set global cookies for user details to be checked in everypage
+      // userDetails.
+    });
   };
 
-  render() {
-    return (
-      <Form>
-        <FormGroup>
-          <Label for="userEMail">Email</Label>
-          <Input
-            type="email"
-            name="email"
-            id="userEMail"
-            onChange={this.handleChange}
-            placeholder="Enter your Email"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userPassword">Password</Label>
-          <Input
-            type="password"
-            name="password"
-            id="userPassword"
-            onChange={this.handleChange}
-            placeholder="Enter your password"
-          />
-        </FormGroup>
-        <Button onClick={this.loginUser}>Login</Button>
-      </Form>
-    );
-  }
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    // this.setState({ [e.target.name]: e.target.value });
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    // this.setState({ [e.target.name]: e.target.value });
+  };
+
+  return (
+    <Form>
+      <FormGroup>
+        <Label for="userEMail">Email</Label>
+        <Input
+          type="email"
+          name="email"
+          id="userEMail"
+          onChange={(e) => handleEmailChange(e)}
+          placeholder="Enter your Email"
+        />
+      </FormGroup>
+      <FormGroup>
+        <Label for="userPassword">Password</Label>
+        <Input
+          type="password"
+          name="password"
+          id="userPassword"
+          onChange={(e) => handlePasswordChange(e)}
+          placeholder="Enter your password"
+        />
+      </FormGroup>
+      <Button onClick={(e) => loginUser(e)}>Login</Button>
+    </Form>
+  );
 }
 
-const mapStateToProps = (state) => ({
-  user: state.user,
-});
-
-export default connect(mapStateToProps, { loginUser })(LoginPage);
+export default LoginPage;
