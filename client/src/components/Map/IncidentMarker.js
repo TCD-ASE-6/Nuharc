@@ -1,5 +1,5 @@
 import React from "react";
-import "./IncidentMarker.css";
+import "./MapStyle.css";
 import "../ReportIncident/ReportIncident"
 
 /**

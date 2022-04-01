@@ -1,11 +1,7 @@
 import React from "react";
 import axios from "axios";
-import "./IncidentMarker.css";
-
+import "./MapStyle.css";
 import { Button, ListGroup, ListGroupItem } from "reactstrap";
-
-// require('dotenv').config();
-
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -18,7 +14,7 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-// Routing mode for the HERE map API
+// Country code HERE map API
 const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
 // Max retrieved results for autocompletion
 const AUTOCOMPLETE_MAX_RESULTS = 5;
@@ -36,7 +32,7 @@ export default class Map3 extends React.Component {
   H = window.H;
 
   /**
-   * ctor
+   * constructor
    *
    */
   constructor(props) {
@@ -54,11 +50,10 @@ export default class Map3 extends React.Component {
       incidents: { incidentList: [] },
       address: "",
       router: null,
-      isFixedRoute: false,
-      incidentAtDestination: {},
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
+    this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
     this.onSearchBarKeyUp = this.onSearchBarKeyUp.bind(this);
     this.onAutoCompleteSuccess = this.onAutoCompleteSuccess.bind(this);
     this.setCurrentPostion();
@@ -85,13 +80,17 @@ export default class Map3 extends React.Component {
         pixelRatio: window.devicePixelRatio || 1,
       }
     );
+    // real time traffic information
+    map.addLayer(defaultLayers.vector.normal.traffic);
+    // real time traffic incidents
+    map.addLayer(defaultLayers.vector.normal.trafficincidents);
 
     const behavior = new this.H.mapevents.Behavior(
       new this.H.mapevents.MapEvents(map)
     );
 
     // Create the default UI components to allow the user to interact with them
-    const ui = this.H.ui.UI.createDefault(map, defaultLayers);
+    this.H.ui.UI.createDefault(map, defaultLayers);
     // add a resize listener to make sure that the map occupies the whole container
     window.addEventListener("resize", () => map.getViewPort().resize());
 
@@ -106,6 +105,7 @@ export default class Map3 extends React.Component {
     this.autocompleteRequest.responseType = "json";
 
     this.setState({ router: platform.getRoutingService(null, 8), map: map });
+    this.addDublinBikeMarkerToMap();
 
     //default coordinates to show fixed route (used in emergency dashboard)
     if (
@@ -188,8 +188,8 @@ export default class Map3 extends React.Component {
   }
 
   /**
-   *
-   * @param {*} searchString
+   * This function suggests valid destinations to the user based on the search string.
+   * @param {*} searchString user search query
    */
   autocomplete(searchString) {
     let params =
@@ -212,8 +212,9 @@ export default class Map3 extends React.Component {
   }
 
   /**
+   * Callback when HERE API returns details of autocompletion
    *
-   * @param {*} event details of the occurred event
+   * @param {*} event event which contains autocomplete results
    */
   onAutoCompleteSuccess(event) {
     let searchSuggestions = document.getElementById(SEARCH_SUGGESTIONS_ID);
@@ -270,6 +271,48 @@ export default class Map3 extends React.Component {
   }
 
   /**
+   * show the safe areas on the map
+   *
+   */
+  createSafeZones() {
+    var circleStyle = {
+      strokeColor: "darkgreen",
+      fillColor: "rgba(0, 188, 71, 0.4)",
+      lineWidth: 10,
+    };
+
+    var zone = new this.H.map.Circle(
+      { lat: 53.33810241909542, lng: -6.2587451872999305 },
+      200,
+      { style: circleStyle }
+    );
+    zone.id = "safe_zone";
+    this.state.map.addObject(zone);
+    var zone = new this.H.map.Circle(
+      { lat: 53.33971103377993, lng: -6.249285026362085 },
+      130,
+      { style: circleStyle }
+    );
+    zone.id = "safe_zone";
+    this.state.map.addObject(zone);
+    var zone = new this.H.map.Circle(
+      { lat: 53.35674586966649, lng: -6.257488946686209 },
+      100,
+      { style: circleStyle }
+    );
+    zone.id = "safe_zone";
+    this.state.map.addObject(zone);
+  }
+
+  /**
+   * hide the safe areas on the map
+   *
+   */
+  hideSafeZones() {
+    this.removeObjectFromMap("safe_zone");
+  }
+
+  /**
    * Callback when the autocomplete fails
    *
    */
@@ -289,8 +332,9 @@ export default class Map3 extends React.Component {
   }
 
   /**
+   * Callback whıch contaıns the routıng result from the HERE API
    *
-   * @param {*} result
+   * @param {*} result answer from the server whıch contaıns the route
    */
   onRoutingResult(result) {
     if (result.routes.length) {
@@ -313,13 +357,170 @@ export default class Map3 extends React.Component {
         // Create a marker for the end point:
         let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
+        this.removeObjectFromMap("route_line");
+        this.removeObjectFromMap("start_point");
+        this.removeObjectFromMap("end_point");
+        routeLine.id = "route_line";
+        startMarker.id = "start_point";
+        endMarker.id = "end_point";
+
         // Add the route polyline and the two markers to the map:
         this.state.map.addObjects([routeLine, startMarker, endMarker]);
       });
     }
   }
 
-  calculateDisasterArea(orgiLat, origLng, height, width) {}
+  /**
+   *
+   * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs).
+   * Throught this function, we can remove the old markers and polylines.
+   * ## ====================== ##
+   * we used the logic from the source below.
+   * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
+   * ## ====================== ##
+   * @param {*} objectID ID of the Object that is removed from the map.
+   */
+  removeObjectFromMap(objectID) {
+    for (let object of this.state.map.getObjects()) {
+      if (object.id === objectID) {
+        this.state.map.removeObject(object);
+      }
+    }
+  }
+
+  /**
+   * This function calculates a route from the current position of the user to ...
+   * and displays the calculated route on the map.
+   *
+   */
+  async calculateRoute() {
+    let disasterAreas = "";
+    for (const incident of this.state.incidents.incidentList) {
+      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
+      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
+      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
+      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
+      disasterAreas +=
+        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+    }
+  }
+
+  /**
+   * Callback when the autocomplete fails
+   *
+   */
+  onAutoCompleteFailure() {
+    //TODO: add failure handling
+    console.log("autocomplete failed");
+  }
+
+  /**
+   * Callback when the user types in the searchbar
+   *
+   * @param {*} event details of the occurred event
+   */
+  onSearchBarKeyUp(event) {
+    this.autocomplete(event.target.value);
+    event.preventDefault();
+  }
+
+  /**
+   * Callback whıch contaıns the routıng result from the HERE API
+   * 
+   * @param {*} result answer from the server whıch contaıns the route
+   */
+   onRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
+
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "blue", lineWidth: 3 },
+        });
+
+        // Create a marker for the start point:
+        let startMarker = new this.H.map.Marker(
+          section.departure.place.location
+        );
+
+        // Create a marker for the end point:
+        let endMarker = new this.H.map.Marker(section.arrival.place.location);
+
+        // Add the route polyline and the two markers to the map:
+        routeLine.id="route_line"
+        startMarker.id="start_point"
+        endMarker.id="end_point"
+        this.removeObjectFromMap("route_line");
+        this.removeObjectFromMap("start_point");
+        this.removeObjectFromMap("end_point");
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine, startMarker, endMarker]);
+      });
+    }
+  }
+
+
+  /**
+   * Callback which contains the routing result from the HERE API (original route)
+   * TODO: remove duplicate code
+   * @param {*} result answer from the server whıch contains the route
+   */
+   onOriginalRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
+
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "grey", lineWidth: 3 },
+        });
+        this.removeObjectFromMap("orig_route_line");
+        routeLine.id = "orig_route_line";
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine]);
+      });
+    }
+  }
+
+  /**
+   * This function calculates the route without disaster zones
+   */
+   async calculateOriginalRoute() {
+    let routingParameters = {
+      routingMode: ROUTING_MODE,
+      transportMode: TRANSPORT_MODE,
+      origin:
+        this.state.currentCoordinates.lat +
+        "," +
+        this.state.currentCoordinates.lng,
+      destination:
+        this.state.destinationCoordinates.lat +
+        "," +
+        this.state.destinationCoordinates.lng,
+      return: "polyline",
+    };
+
+    if (this.state.router) {
+      this.state.router.calculateRoute(
+        routingParameters,
+        this.onOriginalRoutingResult,
+        function (error) {
+          alert(error.message);
+        }
+      );
+    } else {
+      console.log("Could not calculate route. Router is null");
+    }
+  }
 
   /**
    * This function calculates a route from the current position of the user to ...
@@ -337,7 +538,6 @@ export default class Map3 extends React.Component {
         "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
     }
 
-    console.log(disasterAreas);
     let routingParameters = {
       routingMode: ROUTING_MODE,
       transportMode: TRANSPORT_MODE,
@@ -367,6 +567,55 @@ export default class Map3 extends React.Component {
     }
   }
 
+
+  addDublinBikeMarkerToMap() {
+    let request = new XMLHttpRequest();
+    request.addEventListener("load", (event) => {
+      let responseArr = JSON.parse(event.target.response);
+      responseArr.forEach((section) => {
+        let innerElement = document.createElement("div");
+        innerElement.style.color = "black";
+        innerElement.style.width = "30px";
+        innerElement.style.height = "30px";
+        innerElement.style.marginTop = "-10px";
+        innerElement.style.marginLeft = "-10px";
+        innerElement.innerHTML = "🚲";
+
+        let incidentElement = document.createElement("div");
+        let incidentDetailsElement = document.createElement("div");
+        incidentDetailsElement.classList.add("incidentMarker-details");
+        incidentDetailsElement.textContent =
+          "Station: " +
+          section.name +
+          " available bikes: " +
+          section.available_bikes;
+
+        incidentElement.classList.add("incidentMarker");
+        incidentElement.appendChild(incidentDetailsElement);
+        incidentElement.appendChild(innerElement);
+        //create icon
+        var incidentIcon = new this.H.map.DomIcon(incidentElement);
+
+        // create map marker
+        var incidentMarker = new this.H.map.DomMarker(
+          { lat: section.position.lat, lng: section.position.lng },
+          {
+            icon: incidentIcon,
+          }
+        );
+        this.state.map.addObject(incidentMarker);
+      });
+      console.log(responseArr);
+    });
+    request.open(
+      "GET",
+      "https://api.jcdecaux.com/vls/v1/stations?contract=Dublin&apiKey=b1564a98f90c7d2182f10b93848a8e00fe7e7b89"
+    );
+    request.setRequestHeader("Accept", " application/json");
+
+    request.send();
+  }
+
   /**
    * This function adds an active incident marker to the map
    *
@@ -376,26 +625,54 @@ export default class Map3 extends React.Component {
    * @param {*} incidentType The type of the incident
    */
   addIncidentMarkerToMap(incidentLat, incidentLng, incidentDate, incidentType) {
-    let incidentElement = document.createElement("div");
-    incidentElement.classList.add("incidentMarker");
+    let innerElement = document.createElement("div");
+    innerElement.style.color = "black";
+    innerElement.style.width = "30px";
+    innerElement.style.height = "30px";
+    innerElement.style.marginTop = "-10px";
+    innerElement.style.marginLeft = "-10px";
+    innerElement.innerHTML = "⚠";
 
-    let incidentDetailsElement = document.createElement("span");
+    let incidentElement = document.createElement("div");
+    let incidentDetailsElement = document.createElement("div");
     incidentDetailsElement.classList.add("incidentMarker-details");
     incidentDetailsElement.textContent =
       "Date: " + incidentDate + " Incident: " + incidentType;
 
+    incidentElement.classList.add("incidentMarker");
     incidentElement.appendChild(incidentDetailsElement);
-    let incidentMarkerIcon = new this.H.map.DomIcon(incidentElement);
-    let incidentMarker = new this.H.map.DomMarker(
+    incidentElement.appendChild(innerElement);
+    //create icon
+    var incidentIcon = new this.H.map.DomIcon(incidentElement);
+
+    // create map marker
+    var incidentMarker = new this.H.map.DomMarker(
       { lat: incidentLat, lng: incidentLng },
       {
-        icon: incidentMarkerIcon,
+        icon: incidentIcon,
       }
     );
     this.state.map.addObject(incidentMarker);
+
+    var circleStyle = {
+      strokeColor: "red",
+      fillColor: "rgba(0, 95, 255, 0.1)",
+      lineWidth: 10,
+    };
+    var circle = new this.H.map.Circle(
+      { lat: incidentLat, lng: incidentLng },
+      75,
+      { style: circleStyle }
+    );
+
+    this.state.map.addObject(circle);
   }
 
-  currentPositionMarker() {
+  /**
+   * This function calculates the users current locations and,
+   * set the marker on the map to show the current location
+   */
+  setCurrentPositionMarker() {
     var options = {
       enableHighAccuracy: true,
       timeout: 5000,
@@ -404,11 +681,13 @@ export default class Map3 extends React.Component {
 
     function success(pos) {
       var curr_coordinates = pos.coords;
-
-      console.log(`Current Latitude : ${curr_coordinates.latitude}`);
-      console.log(`Current Longitude: ${curr_coordinates.longitude}`);
+      console.log(
+        `User set coordinates! Current Latitude : ${curr_coordinates.latitude}`
+      );
+      console.log(
+        `User set coordinates! Current Longitude: ${curr_coordinates.longitude}`
+      );
     }
-
     function error(err) {
       console.warn(`ERROR(${err.code}): ${err.message}`);
     }
@@ -419,8 +698,11 @@ export default class Map3 extends React.Component {
       lat: this.state.currentCoordinates.lat,
       lng: this.state.currentCoordinates.lng,
     });
+    currentM.id = "current_position";
+    this.removeObjectFromMap("current_position");
     this.state.map.addObject(currentM);
   }
+
   /**
    * This function renders the component to the screen
    *
