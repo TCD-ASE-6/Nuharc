@@ -1,7 +1,7 @@
 import React from "react";
 import axios from "axios";
 import "./MapStyle.css";
-
+import { Button, ListGroup, ListGroupItem } from "reactstrap";
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -106,6 +106,24 @@ export default class Map3 extends React.Component {
 
     this.setState({ router: platform.getRoutingService(null, 8), map: map });
     this.addDublinBikeMarkerToMap();
+
+    //default coordinates to show fixed route (used in emergency dashboard)
+    if (
+      this.props &&
+      this.props.isFixedRoute &&
+      this.props.lat != null &&
+      this.props.lng != null
+    ) {
+      //TODO: hide location search bar
+      this.setState({
+        destinationCoordinates: {
+          lat: this.props.lat,
+          lng: this.props.lng,
+        },
+        isFixedRoute: true,
+        incidentAtDestination: this.props.incident,
+      });
+    }
   }
 
   /**
@@ -123,6 +141,23 @@ export default class Map3 extends React.Component {
   async setIncidents() {
     const incidents = await axios.get("/api/incident/");
     this.setState({ incidents: { incidentList: incidents.data } });
+  }
+
+  async setResolved() {
+    let incidentAtDestination = this.state.incidentAtDestination;
+    incidentAtDestination.active = false;
+    const requestOptions = {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(incidentAtDestination),
+    };
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const response = await fetch(
+      `${baseUrl}/api/incident/${incidentAtDestination._id}`,
+      requestOptions
+    ).then((response) => {
+      console.log(response.json());
+    });
   }
 
   /**
@@ -368,6 +403,140 @@ export default class Map3 extends React.Component {
       disasterAreas +=
         "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
     }
+  }
+
+  /**
+   * Callback when the autocomplete fails
+   *
+   */
+  onAutoCompleteFailure() {
+    //TODO: add failure handling
+    console.log("autocomplete failed");
+  }
+
+  /**
+   * Callback when the user types in the searchbar
+   *
+   * @param {*} event details of the occurred event
+   */
+  onSearchBarKeyUp(event) {
+    this.autocomplete(event.target.value);
+    event.preventDefault();
+  }
+
+  /**
+   * Callback whıch contaıns the routıng result from the HERE API
+   * 
+   * @param {*} result answer from the server whıch contaıns the route
+   */
+   onRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
+
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "blue", lineWidth: 3 },
+        });
+
+        // Create a marker for the start point:
+        let startMarker = new this.H.map.Marker(
+          section.departure.place.location
+        );
+
+        // Create a marker for the end point:
+        let endMarker = new this.H.map.Marker(section.arrival.place.location);
+
+        // Add the route polyline and the two markers to the map:
+        routeLine.id="route_line"
+        startMarker.id="start_point"
+        endMarker.id="end_point"
+        this.removeObjectFromMap("route_line");
+        this.removeObjectFromMap("start_point");
+        this.removeObjectFromMap("end_point");
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine, startMarker, endMarker]);
+      });
+    }
+  }
+
+
+  /**
+   * Callback which contains the routing result from the HERE API (original route)
+   * TODO: remove duplicate code
+   * @param {*} result answer from the server whıch contains the route
+   */
+   onOriginalRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
+
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "grey", lineWidth: 3 },
+        });
+        this.removeObjectFromMap("orig_route_line");
+        routeLine.id = "orig_route_line";
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine]);
+      });
+    }
+  }
+
+  /**
+   * This function calculates the route without disaster zones
+   */
+   async calculateOriginalRoute() {
+    let routingParameters = {
+      routingMode: ROUTING_MODE,
+      transportMode: TRANSPORT_MODE,
+      origin:
+        this.state.currentCoordinates.lat +
+        "," +
+        this.state.currentCoordinates.lng,
+      destination:
+        this.state.destinationCoordinates.lat +
+        "," +
+        this.state.destinationCoordinates.lng,
+      return: "polyline",
+    };
+
+    if (this.state.router) {
+      this.state.router.calculateRoute(
+        routingParameters,
+        this.onOriginalRoutingResult,
+        function (error) {
+          alert(error.message);
+        }
+      );
+    } else {
+      console.log("Could not calculate route. Router is null");
+    }
+  }
+
+  /**
+   * This function calculates a route from the current position of the user to ...
+   * and displays the calculated route on the map.
+   *
+   */
+  async calculateRoute() {
+    let disasterAreas = "";
+    for (const incident of this.state.incidents.incidentList) {
+      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
+      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
+      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
+      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
+      disasterAreas +=
+        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+    }
 
     let routingParameters = {
       routingMode: ROUTING_MODE,
@@ -397,62 +566,7 @@ export default class Map3 extends React.Component {
       console.log("Could not calculate route. Router is null");
     }
   }
-  /**
-   * Callback which contains the routing result from the HERE API (original route)
-   * TODO: remove duplicate code
-   * @param {*} result answer from the server whıch contains the route
-   */
-  onOriginalRoutingResult(result) {
-    if (result.routes.length) {
-      result.routes[0].sections.forEach((section) => {
-        // Create a linestring to use as a point source for the route line
-        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
-          section.polyline
-        );
 
-        // Create a polyline to display the route:
-        let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "grey", lineWidth: 3 },
-        });
-        this.removeObjectFromMap("orig_route_line");
-        routeLine.id = "orig_route_line";
-
-        // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine]);
-      });
-    }
-  }
-
-  /**
-   * This function calculates the route without disaster zones
-   */
-  async calculateOriginalRoute() {
-    let routingParameters = {
-      routingMode: ROUTING_MODE,
-      transportMode: TRANSPORT_MODE,
-      origin:
-        this.state.currentCoordinates.lat +
-        "," +
-        this.state.currentCoordinates.lng,
-      destination:
-        this.state.destinationCoordinates.lat +
-        "," +
-        this.state.destinationCoordinates.lng,
-      return: "polyline",
-    };
-
-    if (this.state.router) {
-      this.state.router.calculateRoute(
-        routingParameters,
-        this.onOriginalRoutingResult,
-        function (error) {
-          alert(error.message);
-        }
-      );
-    } else {
-      console.log("Could not calculate route. Router is null");
-    }
-  }
 
   addDublinBikeMarkerToMap() {
     let request = new XMLHttpRequest();
@@ -596,30 +710,47 @@ export default class Map3 extends React.Component {
   render() {
     return (
       <div>
-        <input
-          type="text"
-          id={SEARCH_BAR_ID}
-          onKeyUp={this.onSearchBarKeyUp}
-        ></input>
-        <span>Current Destination: </span>
-        <span id={DESTINATION_SPAN_ID}> </span>
-        <ul id={SEARCH_SUGGESTIONS_ID}></ul>
-        <button
-          onClick={() => {
-            this.calculateOriginalRoute();
-            this.calculateRoute();
-          }}
-        >
-          Calculate Route
-        </button>
-        <button onClick={() => this.setCurrentPositionMarker()}>
-          Find Current Location
-        </button>
-        <button onClick={() => this.createSafeZones()}>Show Safe Zones</button>
-        <button onClick={() => this.hideSafeZones()}>Hide Safe Zones</button>
+        {!this.state.isFixedRoute && (
+          <div>
+            <input
+              type="text"
+              id={SEARCH_BAR_ID}
+              onKeyUp={this.onSearchBarKeyUp}
+              placeholder="Enter Destination"
+            ></input>
+            <span>Current Destination: </span>
+            <span id={DESTINATION_SPAN_ID}> </span>
+            <ul id={SEARCH_SUGGESTIONS_ID}></ul>
+            <button onClick={() => this.calculateRoute()}>
+              Calculate Route
+            </button>
+            <button onClick={() => this.currentPositionMarker()}>
+              Find Current Location
+            </button>
+          </div>
+        )}
+
+        {this.state.isFixedRoute && (
+          <ListGroup>
+            <ListGroupItem color="warning">
+              <div style={{ padding: "5px" }}>
+                <h2>Emergency Services Route Director</h2>
+                <Button color="primary" onClick={() => this.calculateRoute()}>
+                  Show Route
+                </Button>{" "}
+                <Button
+                  color="success"
+                  onClick={() => this.setResolved()}
+                  type="submit"
+                >
+                  Set Resolved
+                </Button>
+              </div>
+            </ListGroupItem>
+          </ListGroup>
+        )}
 
         <div ref={this.mapRef} style={{ height: "93.5vh" }}></div>
-
         {this.state.incidents.incidentList.map((incident, i) =>
           this.addIncidentMarkerToMap(
             incident.latitude.$numberDecimal,

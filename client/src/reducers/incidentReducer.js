@@ -1,8 +1,11 @@
-import { UPDATE_INCIDENTS } from "../actions/incidentActionTypes";
+import {
+  UPDATE_INCIDENTS,
+  UPDATE_SINGLE_INCIDENT,
+} from "../actions/incidentActionTypes";
 import axios from 'axios';
 
 let initialState = {
-    incidentList: []
+  incidentList: [],
 };
 
 axios.get('/api/incident/').then((res) => {
@@ -18,6 +21,8 @@ export default function (state = initialState, actions) {
         ...state,
         incidentList: actions.payload,
       };
+    case UPDATE_SINGLE_INCIDENT:
+      return state;
     default:
       return state;
   }

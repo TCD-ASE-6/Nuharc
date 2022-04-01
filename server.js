@@ -83,6 +83,9 @@ app2.use(passport.initialize());
 // passport config
 require("./config/passport")(passport);
 
+app1.use(cors());
+app2.use(cors());
+
 // Route base path rules
 app1.use("/api/users", usersAPI);
 app2.use("/api/users", usersAPI);

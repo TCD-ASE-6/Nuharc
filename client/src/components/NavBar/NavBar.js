@@ -1,12 +1,19 @@
 import React from "react";
-import { NavLink } from 'react-router-dom';
-import { Navbar } from 'react-bootstrap';
+import { Nav, Navbar, Container, NavDropdown } from 'react-bootstrap';
 import "../../style/main.css";
 import "../../index";
-import { Container } from 'react-bootstrap';
-import { Nav } from 'react-bootstrap';
-import { NavDropdown } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+/**
+ * 
+ * While creating the responsive navbar, the examples and suggestions 
+ * presented at https://react-bootstrap.github.io/components/navbar/ were used.
+ * 
+ * #== react-bootstrap ==#
+ * 
+ * Source: https://react-bootstrap.github.io/components/navbar/
+ * 
+ */
 
 class NavBar extends React.Component {
   constructor(props) {
@@ -26,19 +33,20 @@ class NavBar extends React.Component {
   render() {
     return (
       <div>
-        <Navbar bg="light" expand="lg">
+        <Navbar expand="lg" variant="light" bg="light" >
           <Container>
             <Navbar.Brand href="/">NuhArc</Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Toggle aria-controls="responsive-navbar-nav" />
             <Navbar.Collapse id="basic-navbar-nav">
               <Nav className="me-auto">
                 <Nav.Link href="/">Home</Nav.Link>
                 <Nav.Link href="/map">Map</Nav.Link>
                 <Nav.Link href="/map3">HereMap</Nav.Link>
                 <Nav.Link href="/report">Report Incident</Nav.Link>
+                <Nav.Link href="/update-incident">Admin</Nav.Link>
               </Nav>
               <Nav>
-                <NavDropdown title="Account" id="basic-nav-dropdown">
+                <NavDropdown id="collasible-nav-dropdown" title="Account" >
                   <NavDropdown.Item href="/login">Log in</NavDropdown.Item>
                   <NavDropdown.Divider />
                   <NavDropdown.Item href="/signup">Sign up</NavDropdown.Item>

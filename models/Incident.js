@@ -30,7 +30,7 @@ const IncidentSchema = new Schema({
     type: Date,
     default: Date.now
   },
-
+  
 });
 
 // convert into a model and export.
