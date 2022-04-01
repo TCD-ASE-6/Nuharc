@@ -584,9 +584,7 @@ class Map3 extends Component {
       <div>
         {!this.state.isFixedRoute && (
           <div>
-            <AutoComplete
-              setDestinationCoordinates={this.setDestinationCoordinates}
-            />
+            <AutoComplete updateLocation={this.setDestinationCoordinates} />
             <button onClick={() => this.calculateRoute()}>
               Calculate Route
             </button>

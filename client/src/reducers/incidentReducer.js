@@ -2,17 +2,20 @@ import {
   UPDATE_INCIDENTS,
   UPDATE_SINGLE_INCIDENT,
 } from "../actions/incidentActionTypes";
-import axios from 'axios';
+import axios from "axios";
 
 let initialState = {
   incidentList: [],
 };
 
-axios.get('/api/incident/').then((res) => {
+axios
+  .get("/api/incident/")
+  .then((res) => {
     initialState.incidentList = res.data;
-}).catch(err => {
+  })
+  .catch((err) => {
     console.log("Error in incidentReducer. " + err);
-});
+  });
 
 export default function (state = initialState, actions) {
   switch (actions.type) {

@@ -115,7 +115,7 @@ class AutoComplete extends Component {
                 //     lng: destLng,
                 //   },
                 // });
-                this.props.setDestinationCoordinates({
+                this.props.updateLocation({
                   lat: destLat,
                   lng: destLng,
                 });
