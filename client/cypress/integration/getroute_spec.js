@@ -1,5 +1,5 @@
 describe("Calculate Route Functionality", () => {
-    it("Log in", async () => {
+    it("get route", async () => {
         cy.visit('/');
         cy.findByPlaceholderText("Enter Destination").type('Dublin');
         // cy.get('ul').closest('strong').click();

@@ -1,5 +1,5 @@
 describe("Current Location Functionality", () => {
-    it("Log in", async () => {
+    it("get current location", async () => {
         cy.visit('/');
         cy.findByText("Find Current Location").click();
         await cy.findByRole('button', { name: /Find Current Location/i }).click()
