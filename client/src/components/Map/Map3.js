@@ -2,6 +2,9 @@ import React from "react";
 import axios from "axios";
 import "./MapStyle.css";
 import { Button, ListGroup, ListGroupItem } from "reactstrap";
+import { Component } from "react";
+import AutoComplete from "../AutoComplete/AutoComplete";
+
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -25,7 +28,7 @@ const SEARCH_BAR_ID = "searchBarId";
 // Element Id of the destination span
 const DESTINATION_SPAN_ID = "destinationSpanId";
 
-export default class Map3 extends React.Component {
+class Map3 extends Component {
   mapRef = React.createRef();
   autocompleteRequest = new XMLHttpRequest();
   //HERE maps instance
@@ -39,10 +42,6 @@ export default class Map3 extends React.Component {
     super(props);
     this.state = {
       map: null,
-      currentCoordinates: {
-        lat: DUBLIN_LAT,
-        lng: DUBLIN_LNG,
-      },
       destinationCoordinates: {
         lat: 53.35600864423722,
         lng: -6.256456570972608,
@@ -54,8 +53,7 @@ export default class Map3 extends React.Component {
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
     this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
-    this.onSearchBarKeyUp = this.onSearchBarKeyUp.bind(this);
-    this.onAutoCompleteSuccess = this.onAutoCompleteSuccess.bind(this);
+    this.setDestinationCoordinates = this.setDestinationCoordinates.bind(this);
     this.setCurrentPostion();
     this.setIncidents();
   }
@@ -93,16 +91,6 @@ export default class Map3 extends React.Component {
     this.H.ui.UI.createDefault(map, defaultLayers);
     // add a resize listener to make sure that the map occupies the whole container
     window.addEventListener("resize", () => map.getViewPort().resize());
-
-    this.autocompleteRequest.addEventListener(
-      "load",
-      this.onAutoCompleteSuccess
-    );
-    this.autocompleteRequest.addEventListener(
-      "error",
-      this.onAutoCompleteFailure
-    );
-    this.autocompleteRequest.responseType = "json";
 
     this.setState({ router: platform.getRoutingService(null, 8), map: map });
     this.addDublinBikeMarkerToMap();
@@ -185,89 +173,7 @@ export default class Map3 extends React.Component {
       },
       options
     );
-  }
-
-  /**
-   * This function suggests valid destinations to the user based on the search string.
-   * @param {*} searchString user search query
-   */
-  autocomplete(searchString) {
-    let params =
-      "?query=" +
-      searchString +
-      "&apiKey=" +
-      API_KEY +
-      "&maxresults=" +
-      AUTOCOMPLETE_MAX_RESULTS +
-      "&country=" +
-      AUTOCOMPLETE_COUNTRY_CODE +
-      "&beginHighlight=<strong>" +
-      "&endHighlight=</strong>";
-
-    this.autocompleteRequest.open(
-      "GET",
-      "https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json" + params
-    );
-    this.autocompleteRequest.send();
-  }
-
-  /**
-   * Callback when HERE API returns details of autocompletion
-   *
-   * @param {*} event event which contains autocomplete results
-   */
-  onAutoCompleteSuccess(event) {
-    let searchSuggestions = document.getElementById(SEARCH_SUGGESTIONS_ID);
-    //remove all old suggestions from the list
-    searchSuggestions.innerHTML = "";
-    //now add the new suggestions
-    try {
-      for (const suggestion of event.target.response.suggestions) {
-        let suggestionElement = document.createElement("li");
-        suggestionElement.innerHTML = suggestion.label;
-        suggestionElement.classList.add("autosuggestElement");
-        suggestionElement.onclick = () => {
-          let lookupRequest = new XMLHttpRequest();
-          lookupRequest.addEventListener("load", (event) => {
-            //unpack response from HERE API which is very complicated for some reason
-            let responseArr = JSON.parse(event.target.response).response.view;
-            if (responseArr.length > 0) {
-              let innerArr = responseArr[0].result;
-              if (innerArr.length > 0) {
-                document.getElementById(SEARCH_BAR_ID).value =
-                  innerArr[0].location.address.label;
-                document.getElementById(DESTINATION_SPAN_ID).innerHTML =
-                  innerArr[0].location.address.label;
-                let destLat = innerArr[0].location.displayPosition.latitude;
-                let destLng = innerArr[0].location.displayPosition.longitude;
-                this.setState({
-                  destinationCoordinates: {
-                    lat: destLat,
-                    lng: destLng,
-                  },
-                });
-              }
-            }
-          });
-          let params =
-            "?locationid=" +
-            suggestion.locationId +
-            "&jsonattributes=1" +
-            "&apiKey=" +
-            API_KEY;
-          lookupRequest.open(
-            "GET",
-            "https://geocoder.ls.hereapi.com/6.2/geocode.json" + params
-          );
-          lookupRequest.send();
-        };
-
-        //add the created element to the list
-        searchSuggestions.appendChild(suggestionElement);
-      }
-    } catch (TypeError) {
-      //do nothing
-    }
+    this.setCurrentPositionMarker();
   }
 
   /**
@@ -310,25 +216,6 @@ export default class Map3 extends React.Component {
    */
   hideSafeZones() {
     this.removeObjectFromMap("safe_zone");
-  }
-
-  /**
-   * Callback when the autocomplete fails
-   *
-   */
-  onAutoCompleteFailure() {
-    //TODO: add failure handling
-    console.log("autocomplete failed");
-  }
-
-  /**
-   * Callback when the user types in the searchbar
-   *
-   * @param {*} event details of the occurred event
-   */
-  onSearchBarKeyUp(event) {
-    this.autocomplete(event.target.value);
-    event.preventDefault();
   }
 
   /**
@@ -406,30 +293,11 @@ export default class Map3 extends React.Component {
   }
 
   /**
-   * Callback when the autocomplete fails
-   *
-   */
-  onAutoCompleteFailure() {
-    //TODO: add failure handling
-    console.log("autocomplete failed");
-  }
-
-  /**
-   * Callback when the user types in the searchbar
-   *
-   * @param {*} event details of the occurred event
-   */
-  onSearchBarKeyUp(event) {
-    this.autocomplete(event.target.value);
-    event.preventDefault();
-  }
-
-  /**
    * Callback whıch contaıns the routıng result from the HERE API
-   * 
+   *
    * @param {*} result answer from the server whıch contaıns the route
    */
-   onRoutingResult(result) {
+  onRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -443,34 +311,33 @@ export default class Map3 extends React.Component {
         });
 
         // Create a marker for the start point:
-        let startMarker = new this.H.map.Marker(
-          section.departure.place.location
-        );
+        // let startMarker = new this.H.map.Marker(
+        //   section.departure.place.location
+        // );
 
         // Create a marker for the end point:
         let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
         // Add the route polyline and the two markers to the map:
-        routeLine.id="route_line"
-        startMarker.id="start_point"
-        endMarker.id="end_point"
+        routeLine.id = "route_line";
+        // startMarker.id = "start_point";
+        endMarker.id = "end_point";
         this.removeObjectFromMap("route_line");
-        this.removeObjectFromMap("start_point");
+        // this.removeObjectFromMap("start_point");
         this.removeObjectFromMap("end_point");
 
         // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine, startMarker, endMarker]);
+        this.state.map.addObjects([routeLine, endMarker]);
       });
     }
   }
-
 
   /**
    * Callback which contains the routing result from the HERE API (original route)
    * TODO: remove duplicate code
    * @param {*} result answer from the server whıch contains the route
    */
-   onOriginalRoutingResult(result) {
+  onOriginalRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -494,7 +361,7 @@ export default class Map3 extends React.Component {
   /**
    * This function calculates the route without disaster zones
    */
-   async calculateOriginalRoute() {
+  async calculateOriginalRoute() {
     let routingParameters = {
       routingMode: ROUTING_MODE,
       transportMode: TRANSPORT_MODE,
@@ -566,7 +433,6 @@ export default class Map3 extends React.Component {
       console.log("Could not calculate route. Router is null");
     }
   }
-
 
   addDublinBikeMarkerToMap() {
     let request = new XMLHttpRequest();
@@ -692,7 +558,7 @@ export default class Map3 extends React.Component {
       console.warn(`ERROR(${err.code}): ${err.message}`);
     }
 
-    navigator.geolocation.getCurrentPosition(success, error, options);
+    // navigator.geolocation.getCurrentPosition(success, error, options);
 
     var currentM = new this.H.map.Marker({
       lat: this.state.currentCoordinates.lat,
@@ -701,6 +567,12 @@ export default class Map3 extends React.Component {
     currentM.id = "current_position";
     this.removeObjectFromMap("current_position");
     this.state.map.addObject(currentM);
+  }
+
+  setDestinationCoordinates(coords) {
+    this.setState({
+      destinationCoordinates: coords,
+    });
   }
 
   /**
@@ -712,19 +584,13 @@ export default class Map3 extends React.Component {
       <div>
         {!this.state.isFixedRoute && (
           <div>
-            <input
-              type="text"
-              id={SEARCH_BAR_ID}
-              onKeyUp={this.onSearchBarKeyUp}
-              placeholder="Enter Destination"
-            ></input>
-            <span>Current Destination: </span>
-            <span id={DESTINATION_SPAN_ID}> </span>
-            <ul id={SEARCH_SUGGESTIONS_ID}></ul>
+            <AutoComplete
+              setDestinationCoordinates={this.setDestinationCoordinates}
+            />
             <button onClick={() => this.calculateRoute()}>
               Calculate Route
             </button>
-            <button onClick={() => this.currentPositionMarker()}>
+            <button onClick={() => this.setCurrentPostion()}>
               Find Current Location
             </button>
           </div>
@@ -763,3 +629,5 @@ export default class Map3 extends React.Component {
     );
   }
 }
+
+export default Map3;
