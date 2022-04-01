@@ -99,6 +99,7 @@ export default class Map3 extends React.Component {
         this.autocompleteRequest.responseType = "json";
 
         this.setState({ router: platform.getRoutingService(null, 8), map: map });
+        this.addDublinBikeMarkerToMap();
     }
 
     /**
@@ -398,6 +399,44 @@ export default class Map3 extends React.Component {
         }
     }
 
+    addDublinBikeMarkerToMap(){
+        let request = new XMLHttpRequest();
+        request.addEventListener("load", (event) => {
+            let responseArr = JSON.parse(event.target.response);
+            responseArr.forEach((section) => {
+                let innerElement = document.createElement('div');
+            innerElement.style.color = 'black';
+            innerElement.style.width = '30px';
+            innerElement.style.height = '30px';
+            innerElement.style.marginTop = '-10px';
+            innerElement.style.marginLeft = '-10px';
+            innerElement.innerHTML = '🚲';
+
+            let incidentElement = document.createElement('div');
+            let incidentDetailsElement = document.createElement('div');
+            incidentDetailsElement.classList.add('incidentMarker-details');
+            incidentDetailsElement.textContent = "Station: " + section.name + " available bikes: " + section.available_bikes;
+
+            incidentElement.classList.add('incidentMarker');
+            incidentElement.appendChild(incidentDetailsElement);
+            incidentElement.appendChild(innerElement);
+            //create icon
+            var incidentIcon = new this.H.map.DomIcon(incidentElement);
+
+            // create map marker
+            var incidentMarker = new this.H.map.DomMarker({lat: section.position.lat, lng: section.position.lng}, {
+                icon: incidentIcon
+            });
+            this.state.map.addObject(incidentMarker);
+            });
+            console.log(responseArr)
+        });
+        request.open("GET", "https://api.jcdecaux.com/vls/v1/stations?contract=Dublin&apiKey=b1564a98f90c7d2182f10b93848a8e00fe7e7b89");
+        request.setRequestHeader('Accept',' application/json');
+
+        request.send();
+    }
+
     /**
      * This function adds an active incident marker to the map
      *
@@ -407,7 +446,6 @@ export default class Map3 extends React.Component {
      * @param {*} incidentType The type of the incident
      */
     addIncidentMarkerToMap(incidentLat,incidentLng,incidentDate,incidentType) {
-
         let innerElement = document.createElement('div');
         innerElement.style.color = 'black';
         innerElement.style.width = '30px';
@@ -511,8 +549,8 @@ export default class Map3 extends React.Component {
                 </button>
 
                 <div ref={this.mapRef} style={{ height: "93.5vh" }}>
-                
                 </div>
+                
                 {this.state.incidents.incidentList.map((incident, i) => (
                     this.addIncidentMarkerToMap(incident.latitude.$numberDecimal,
                         incident.longitude.$numberDecimal,
