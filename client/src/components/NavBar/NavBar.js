@@ -48,6 +48,9 @@ function NavBar() {
               {(role === "admin" ? true : false) && (
                 <Nav.Link href="/update-incident">Admin</Nav.Link>
               )}
+              {(role === "admin" ? true : false) && (
+                <Nav.Link href="/register-service">Register Service</Nav.Link>
+              )}
             </Nav>
             <Nav>
               <NavDropdown id="collapsible-nav-dropdown" title="Account">
