@@ -167,13 +167,19 @@ class Map3 extends Component {
             lng: position.coords.longitude,
           },
         });
+        this.setPositionMarker(
+          {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          },
+          "start_point"
+        );
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
       },
       options
     );
-    this.setCurrentPositionMarker();
   }
 
   /**
@@ -219,6 +225,24 @@ class Map3 extends Component {
   }
 
   /**
+   *
+   * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs).
+   * Throught this function, we can remove the old markers and polylines.
+   * ## ====================== ##
+   * we used the logic from the source below.
+   * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
+   * ## ====================== ##
+   * @param {*} objectID ID of the Object that is removed from the map.
+   */
+  removeObjectFromMap(objectID) {
+    for (let object of this.state.map.getObjects()) {
+      if (object.id === objectID) {
+        this.state.map.removeObject(object);
+      }
+    }
+  }
+
+  /**
    * Callback whıch contaıns the routıng result from the HERE API
    *
    * @param {*} result answer from the server whıch contaıns the route
@@ -244,90 +268,16 @@ class Map3 extends Component {
         // Create a marker for the end point:
         let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
-        this.removeObjectFromMap("route_line");
-        this.removeObjectFromMap("start_point");
-        this.removeObjectFromMap("end_point");
+        // Add the route polyline and the two markers to the map:
         routeLine.id = "route_line";
         startMarker.id = "start_point";
         endMarker.id = "end_point";
-
-        // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine, startMarker, endMarker]);
-      });
-    }
-  }
-
-  /**
-   *
-   * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs).
-   * Throught this function, we can remove the old markers and polylines.
-   * ## ====================== ##
-   * we used the logic from the source below.
-   * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
-   * ## ====================== ##
-   * @param {*} objectID ID of the Object that is removed from the map.
-   */
-  removeObjectFromMap(objectID) {
-    for (let object of this.state.map.getObjects()) {
-      if (object.id === objectID) {
-        this.state.map.removeObject(object);
-      }
-    }
-  }
-
-  /**
-   * This function calculates a route from the current position of the user to ...
-   * and displays the calculated route on the map.
-   *
-   */
-  async calculateRoute() {
-    let disasterAreas = "";
-    for (const incident of this.state.incidents.incidentList) {
-      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
-      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
-      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
-      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
-      disasterAreas +=
-        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
-    }
-  }
-
-  /**
-   * Callback whıch contaıns the routıng result from the HERE API
-   *
-   * @param {*} result answer from the server whıch contaıns the route
-   */
-  onRoutingResult(result) {
-    if (result.routes.length) {
-      result.routes[0].sections.forEach((section) => {
-        // Create a linestring to use as a point source for the route line
-        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
-          section.polyline
-        );
-
-        // Create a polyline to display the route:
-        let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "blue", lineWidth: 3 },
-        });
-
-        // Create a marker for the start point:
-        // let startMarker = new this.H.map.Marker(
-        //   section.departure.place.location
-        // );
-
-        // Create a marker for the end point:
-        let endMarker = new this.H.map.Marker(section.arrival.place.location);
-
-        // Add the route polyline and the two markers to the map:
-        routeLine.id = "route_line";
-        // startMarker.id = "start_point";
-        endMarker.id = "end_point";
         this.removeObjectFromMap("route_line");
         // this.removeObjectFromMap("start_point");
-        this.removeObjectFromMap("end_point");
+        // this.removeObjectFromMap("end_point");
 
         // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine, endMarker]);
+        this.state.map.addObjects([routeLine]);
       });
     }
   }
@@ -538,34 +488,13 @@ class Map3 extends Component {
    * This function calculates the users current locations and,
    * set the marker on the map to show the current location
    */
-  setCurrentPositionMarker() {
-    var options = {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0,
-    };
-
-    function success(pos) {
-      var curr_coordinates = pos.coords;
-      console.log(
-        `User set coordinates! Current Latitude : ${curr_coordinates.latitude}`
-      );
-      console.log(
-        `User set coordinates! Current Longitude: ${curr_coordinates.longitude}`
-      );
-    }
-    function error(err) {
-      console.warn(`ERROR(${err.code}): ${err.message}`);
-    }
-
-    // navigator.geolocation.getCurrentPosition(success, error, options);
-
+  setPositionMarker(coords, id) {
     var currentM = new this.H.map.Marker({
-      lat: this.state.currentCoordinates.lat,
-      lng: this.state.currentCoordinates.lng,
+      lat: coords.lat,
+      lng: coords.lng,
     });
-    currentM.id = "current_position";
-    this.removeObjectFromMap("current_position");
+    currentM.id = id;
+    this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
   }
 
@@ -573,6 +502,8 @@ class Map3 extends Component {
     this.setState({
       destinationCoordinates: coords,
     });
+    this.removeObjectFromMap("route_line");
+    this.setPositionMarker(coords, "end_point");
   }
 
   /**

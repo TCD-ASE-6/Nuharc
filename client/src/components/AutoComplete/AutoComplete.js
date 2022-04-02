@@ -96,6 +96,7 @@ class AutoComplete extends Component {
         suggestionElement.innerHTML = suggestion.label;
         suggestionElement.classList.add("autosuggestElement");
         suggestionElement.onclick = () => {
+          searchSuggestions.innerHTML = "";
           let lookupRequest = new XMLHttpRequest();
           lookupRequest.addEventListener("load", (event) => {
             //unpack response from HERE API which is very complicated for some reason
