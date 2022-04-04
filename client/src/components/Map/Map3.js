@@ -2,6 +2,9 @@ import React from "react";
 import axios from "axios";
 import "./MapStyle.css";
 import { Button, ListGroup, ListGroupItem } from "reactstrap";
+import { Component } from "react";
+import AutoComplete from "../AutoComplete/AutoComplete";
+
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
 // Initial latitude to center the map on Dublin
@@ -14,18 +17,8 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-// Country code HERE map API
-const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
-// Max retrieved results for autocompletion
-const AUTOCOMPLETE_MAX_RESULTS = 5;
-// Element Id of the search suggestions
-const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
-// Element Id of the search suggestions
-const SEARCH_BAR_ID = "searchBarId";
-// Element Id of the destination span
-const DESTINATION_SPAN_ID = "destinationSpanId";
 
-export default class Map3 extends React.Component {
+class Map3 extends Component {
   mapRef = React.createRef();
   autocompleteRequest = new XMLHttpRequest();
   //HERE maps instance
@@ -39,10 +32,6 @@ export default class Map3 extends React.Component {
     super(props);
     this.state = {
       map: null,
-      currentCoordinates: {
-        lat: DUBLIN_LAT,
-        lng: DUBLIN_LNG,
-      },
       destinationCoordinates: {
         lat: 53.35600864423722,
         lng: -6.256456570972608,
@@ -50,12 +39,13 @@ export default class Map3 extends React.Component {
       incidents: { incidentList: [] },
       address: "",
       router: null,
+      currentMarker: null,
+      destinationMarker: null,
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
     this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
-    this.onSearchBarKeyUp = this.onSearchBarKeyUp.bind(this);
-    this.onAutoCompleteSuccess = this.onAutoCompleteSuccess.bind(this);
+    this.setDestinationCoordinates = this.setDestinationCoordinates.bind(this);
     this.setCurrentPostion();
     this.setIncidents();
   }
@@ -93,16 +83,6 @@ export default class Map3 extends React.Component {
     this.H.ui.UI.createDefault(map, defaultLayers);
     // add a resize listener to make sure that the map occupies the whole container
     window.addEventListener("resize", () => map.getViewPort().resize());
-
-    this.autocompleteRequest.addEventListener(
-      "load",
-      this.onAutoCompleteSuccess
-    );
-    this.autocompleteRequest.addEventListener(
-      "error",
-      this.onAutoCompleteFailure
-    );
-    this.autocompleteRequest.responseType = "json";
 
     this.setState({ router: platform.getRoutingService(null, 8), map: map });
     this.addDublinBikeMarkerToMap();
@@ -179,6 +159,13 @@ export default class Map3 extends React.Component {
             lng: position.coords.longitude,
           },
         });
+        this.setPositionMarker(
+          {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          },
+          "start_point"
+        );
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -187,86 +174,24 @@ export default class Map3 extends React.Component {
     );
   }
 
-  /**
-   * This function suggests valid destinations to the user based on the search string.
-   * @param {*} searchString user search query
-   */
-  autocomplete(searchString) {
-    let params =
-      "?query=" +
-      searchString +
-      "&apiKey=" +
-      API_KEY +
-      "&maxresults=" +
-      AUTOCOMPLETE_MAX_RESULTS +
-      "&country=" +
-      AUTOCOMPLETE_COUNTRY_CODE +
-      "&beginHighlight=<strong>" +
-      "&endHighlight=</strong>";
+  zoomToMarkers() {
+    this.removeObjectFromMap("group");
+    if (!(this.state.destinationMarker === null)) {
+      let group = new this.H.map.Group();
+      console.log([this.state.currentMarker, this.state.destinationMarker]);
+      group.addObjects([
+        this.state.currentMarker,
+        this.state.destinationMarker,
+      ]);
+      group.id = "group";
 
-    this.autocompleteRequest.open(
-      "GET",
-      "https://autocomplete.geocoder.ls.hereapi.com/6.2/suggest.json" + params
-    );
-    this.autocompleteRequest.send();
-  }
+      // this.state.map.addObject(this.state.currentMarker);
+      // this.state.map.addObject(this.state.destinationMarker);
+      this.state.map.addObject(group);
 
-  /**
-   * Callback when HERE API returns details of autocompletion
-   *
-   * @param {*} event event which contains autocomplete results
-   */
-  onAutoCompleteSuccess(event) {
-    let searchSuggestions = document.getElementById(SEARCH_SUGGESTIONS_ID);
-    //remove all old suggestions from the list
-    searchSuggestions.innerHTML = "";
-    //now add the new suggestions
-    try {
-      for (const suggestion of event.target.response.suggestions) {
-        let suggestionElement = document.createElement("li");
-        suggestionElement.innerHTML = suggestion.label;
-        suggestionElement.classList.add("autosuggestElement");
-        suggestionElement.onclick = () => {
-          let lookupRequest = new XMLHttpRequest();
-          lookupRequest.addEventListener("load", (event) => {
-            //unpack response from HERE API which is very complicated for some reason
-            let responseArr = JSON.parse(event.target.response).response.view;
-            if (responseArr.length > 0) {
-              let innerArr = responseArr[0].result;
-              if (innerArr.length > 0) {
-                document.getElementById(SEARCH_BAR_ID).value =
-                  innerArr[0].location.address.label;
-                document.getElementById(DESTINATION_SPAN_ID).innerHTML =
-                  innerArr[0].location.address.label;
-                let destLat = innerArr[0].location.displayPosition.latitude;
-                let destLng = innerArr[0].location.displayPosition.longitude;
-                this.setState({
-                  destinationCoordinates: {
-                    lat: destLat,
-                    lng: destLng,
-                  },
-                });
-              }
-            }
-          });
-          let params =
-            "?locationid=" +
-            suggestion.locationId +
-            "&jsonattributes=1" +
-            "&apiKey=" +
-            API_KEY;
-          lookupRequest.open(
-            "GET",
-            "https://geocoder.ls.hereapi.com/6.2/geocode.json" + params
-          );
-          lookupRequest.send();
-        };
-
-        //add the created element to the list
-        searchSuggestions.appendChild(suggestionElement);
-      }
-    } catch (TypeError) {
-      //do nothing
+      this.state.map.getViewModel().setLookAtData({
+        bounds: group.getBoundingBox(),
+      });
     }
   }
 
@@ -313,22 +238,21 @@ export default class Map3 extends React.Component {
   }
 
   /**
-   * Callback when the autocomplete fails
    *
+   * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs).
+   * Throught this function, we can remove the old markers and polylines.
+   * ## ====================== ##
+   * we used the logic from the source below.
+   * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
+   * ## ====================== ##
+   * @param {*} objectID ID of the Object that is removed from the map.
    */
-  onAutoCompleteFailure() {
-    //TODO: add failure handling
-    console.log("autocomplete failed");
-  }
-
-  /**
-   * Callback when the user types in the searchbar
-   *
-   * @param {*} event details of the occurred event
-   */
-  onSearchBarKeyUp(event) {
-    this.autocomplete(event.target.value);
-    event.preventDefault();
+  removeObjectFromMap(objectID) {
+    for (let object of this.state.map.getObjects()) {
+      if (object.id === objectID) {
+        this.state.map.removeObject(object);
+      }
+    }
   }
 
   /**
@@ -357,120 +281,24 @@ export default class Map3 extends React.Component {
         // Create a marker for the end point:
         let endMarker = new this.H.map.Marker(section.arrival.place.location);
 
-        this.removeObjectFromMap("route_line");
-        this.removeObjectFromMap("start_point");
-        this.removeObjectFromMap("end_point");
+        // Add the route polyline and the two markers to the map:
         routeLine.id = "route_line";
         startMarker.id = "start_point";
         endMarker.id = "end_point";
-
-        // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine, startMarker, endMarker]);
-      });
-    }
-  }
-
-  /**
-   *
-   * This "removeObjectFromMap" function removes the objects from the map (based on the object IDs).
-   * Throught this function, we can remove the old markers and polylines.
-   * ## ====================== ##
-   * we used the logic from the source below.
-   * source: https://stackoverflow.com/questions/34013037/how-to-remove-previous-routes-in-here-js-api
-   * ## ====================== ##
-   * @param {*} objectID ID of the Object that is removed from the map.
-   */
-  removeObjectFromMap(objectID) {
-    for (let object of this.state.map.getObjects()) {
-      if (object.id === objectID) {
-        this.state.map.removeObject(object);
-      }
-    }
-  }
-
-  /**
-   * This function calculates a route from the current position of the user to ...
-   * and displays the calculated route on the map.
-   *
-   */
-  async calculateRoute() {
-    let disasterAreas = "";
-    for (const incident of this.state.incidents.incidentList) {
-      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
-      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
-      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
-      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
-      disasterAreas +=
-        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
-    }
-  }
-
-  /**
-   * Callback when the autocomplete fails
-   *
-   */
-  onAutoCompleteFailure() {
-    //TODO: add failure handling
-    console.log("autocomplete failed");
-  }
-
-  /**
-   * Callback when the user types in the searchbar
-   *
-   * @param {*} event details of the occurred event
-   */
-  onSearchBarKeyUp(event) {
-    this.autocomplete(event.target.value);
-    event.preventDefault();
-  }
-
-  /**
-   * Callback whıch contaıns the routıng result from the HERE API
-   * 
-   * @param {*} result answer from the server whıch contaıns the route
-   */
-   onRoutingResult(result) {
-    if (result.routes.length) {
-      result.routes[0].sections.forEach((section) => {
-        // Create a linestring to use as a point source for the route line
-        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
-          section.polyline
-        );
-
-        // Create a polyline to display the route:
-        let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "blue", lineWidth: 3 },
-        });
-
-        // Create a marker for the start point:
-        let startMarker = new this.H.map.Marker(
-          section.departure.place.location
-        );
-
-        // Create a marker for the end point:
-        let endMarker = new this.H.map.Marker(section.arrival.place.location);
-
-        // Add the route polyline and the two markers to the map:
-        routeLine.id="route_line"
-        startMarker.id="start_point"
-        endMarker.id="end_point"
         this.removeObjectFromMap("route_line");
-        this.removeObjectFromMap("start_point");
-        this.removeObjectFromMap("end_point");
 
         // Add the route polyline and the two markers to the map:
-        this.state.map.addObjects([routeLine, startMarker, endMarker]);
+        this.state.map.addObjects([routeLine]);
       });
     }
   }
-
 
   /**
    * Callback which contains the routing result from the HERE API (original route)
    * TODO: remove duplicate code
    * @param {*} result answer from the server whıch contains the route
    */
-   onOriginalRoutingResult(result) {
+  onOriginalRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -494,7 +322,7 @@ export default class Map3 extends React.Component {
   /**
    * This function calculates the route without disaster zones
    */
-   async calculateOriginalRoute() {
+  async calculateOriginalRoute() {
     let routingParameters = {
       routingMode: ROUTING_MODE,
       transportMode: TRANSPORT_MODE,
@@ -567,7 +395,6 @@ export default class Map3 extends React.Component {
     }
   }
 
-
   addDublinBikeMarkerToMap() {
     let request = new XMLHttpRequest();
     request.addEventListener("load", (event) => {
@@ -605,7 +432,6 @@ export default class Map3 extends React.Component {
         );
         this.state.map.addObject(incidentMarker);
       });
-      console.log(responseArr);
     });
     request.open(
       "GET",
@@ -672,35 +498,28 @@ export default class Map3 extends React.Component {
    * This function calculates the users current locations and,
    * set the marker on the map to show the current location
    */
-  setCurrentPositionMarker() {
-    var options = {
-      enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0,
-    };
-
-    function success(pos) {
-      var curr_coordinates = pos.coords;
-      console.log(
-        `User set coordinates! Current Latitude : ${curr_coordinates.latitude}`
-      );
-      console.log(
-        `User set coordinates! Current Longitude: ${curr_coordinates.longitude}`
-      );
-    }
-    function error(err) {
-      console.warn(`ERROR(${err.code}): ${err.message}`);
-    }
-
-    navigator.geolocation.getCurrentPosition(success, error, options);
-
+  setPositionMarker(coords, id) {
     var currentM = new this.H.map.Marker({
-      lat: this.state.currentCoordinates.lat,
-      lng: this.state.currentCoordinates.lng,
+      lat: coords.lat,
+      lng: coords.lng,
     });
-    currentM.id = "current_position";
-    this.removeObjectFromMap("current_position");
+    currentM.id = id;
+    if (id === "start_point") {
+      this.state.currentMarker = currentM;
+    } else {
+      this.state.destinationMarker = currentM;
+    }
+    this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
+    this.zoomToMarkers();
+  }
+
+  setDestinationCoordinates(coords) {
+    this.setState({
+      destinationCoordinates: coords,
+    });
+    this.removeObjectFromMap("route_line");
+    this.setPositionMarker(coords, "end_point");
   }
 
   /**
@@ -712,19 +531,11 @@ export default class Map3 extends React.Component {
       <div>
         {!this.state.isFixedRoute && (
           <div>
-            <input
-              type="text"
-              id={SEARCH_BAR_ID}
-              onKeyUp={this.onSearchBarKeyUp}
-              placeholder="Enter Destination"
-            ></input>
-            <span>Current Destination: </span>
-            <span id={DESTINATION_SPAN_ID}> </span>
-            <ul id={SEARCH_SUGGESTIONS_ID}></ul>
+            <AutoComplete updateLocation={this.setDestinationCoordinates} />
             <button onClick={() => this.calculateRoute()}>
               Calculate Route
             </button>
-            <button onClick={() => this.currentPositionMarker()}>
+            <button onClick={() => this.setCurrentPostion()}>
               Find Current Location
             </button>
           </div>
@@ -750,7 +561,7 @@ export default class Map3 extends React.Component {
           </ListGroup>
         )}
 
-        <div ref={this.mapRef} style={{ height: "93.5vh" }}></div>
+        <div ref={this.mapRef} style={{ height: "87vh" }}></div>
         {this.state.incidents.incidentList.map((incident, i) =>
           this.addIncidentMarkerToMap(
             incident.latitude.$numberDecimal,
@@ -763,3 +574,5 @@ export default class Map3 extends React.Component {
     );
   }
 }
+
+export default Map3;
