@@ -49,6 +49,8 @@ class Map3 extends Component {
       incidents: { incidentList: [] },
       address: "",
       router: null,
+      currentMarker: null,
+      destinationMarker: null,
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
@@ -180,6 +182,23 @@ class Map3 extends Component {
       },
       options
     );
+  }
+
+  zoomToMarkers() {
+    if (!(this.state.destinationMarker === null)) {
+      let group = new this.H.map.Group();
+      console.log([this.state.currentMarker, this.state.destinationMarker]);
+      group.addObjects([
+        this.state.currentMarker,
+        this.state.destinationMarker,
+      ]);
+
+      this.state.map.addObject(group);
+
+      this.state.map.getViewModel().setLookAtData({
+        bounds: group.getBoundingBox(),
+      });
+    }
   }
 
   /**
@@ -421,7 +440,6 @@ class Map3 extends Component {
         );
         this.state.map.addObject(incidentMarker);
       });
-      console.log(responseArr);
     });
     request.open(
       "GET",
@@ -493,9 +511,15 @@ class Map3 extends Component {
       lat: coords.lat,
       lng: coords.lng,
     });
+    if (id === "start_point") {
+      this.state.currentMarker = currentM;
+    } else {
+      this.state.destinationMarker = currentM;
+    }
     currentM.id = id;
     this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
+    this.zoomToMarkers();
   }
 
   setDestinationCoordinates(coords) {
@@ -545,7 +569,7 @@ class Map3 extends Component {
           </ListGroup>
         )}
 
-        <div ref={this.mapRef} style={{ height: "93.5vh" }}></div>
+        <div ref={this.mapRef} style={{ height: "87vh" }}></div>
         {this.state.incidents.incidentList.map((incident, i) =>
           this.addIncidentMarkerToMap(
             incident.latitude.$numberDecimal,
