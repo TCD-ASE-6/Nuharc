@@ -171,6 +171,7 @@ class AutoComplete extends Component {
           type="text"
           id={SEARCH_BAR_ID}
           onKeyUp={this.onSearchBarKeyUp}
+          placeholder="Enter Location"
         ></input>
         <span>Current Destination: </span>
         <span id={DESTINATION_SPAN_ID}> </span>
