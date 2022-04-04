@@ -14,18 +14,6 @@ const DUBLIN_LAT = 53.34460864423722;
 const DUBLIN_LNG = -6.276456570972608;
 // Initial zoom factor of the map
 const INITIAL_ZOOM = 13;
-// Transport mode for the HERE map API
-const TRANSPORT_MODE = "pedestrian";
-// Routing mode for the HERE map API
-const ROUTING_MODE = "fast";
-// Country code HERE map API
-const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
-// Max retrieved results for autocompletion
-const AUTOCOMPLETE_MAX_RESULTS = 5;
-// Element Id of the search suggestions
-const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
-// Element Id of the search suggestions
-const SEARCH_BAR_ID = "searchBarId";
 // Element Id of the destination span
 const DESTINATION_SPAN_ID = "destinationSpanId";
 

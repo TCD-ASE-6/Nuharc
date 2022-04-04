@@ -17,16 +17,6 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-// Country code HERE map API
-const AUTOCOMPLETE_COUNTRY_CODE = "IRL";
-// Max retrieved results for autocompletion
-const AUTOCOMPLETE_MAX_RESULTS = 5;
-// Element Id of the search suggestions
-const SEARCH_SUGGESTIONS_ID = "searchSuggestionsId";
-// Element Id of the search suggestions
-const SEARCH_BAR_ID = "searchBarId";
-// Element Id of the destination span
-const DESTINATION_SPAN_ID = "destinationSpanId";
 
 class Map3 extends Component {
   mapRef = React.createRef();
@@ -185,6 +175,7 @@ class Map3 extends Component {
   }
 
   zoomToMarkers() {
+    this.removeObjectFromMap("group");
     if (!(this.state.destinationMarker === null)) {
       let group = new this.H.map.Group();
       console.log([this.state.currentMarker, this.state.destinationMarker]);
@@ -192,7 +183,10 @@ class Map3 extends Component {
         this.state.currentMarker,
         this.state.destinationMarker,
       ]);
+      group.id = "group";
 
+      // this.state.map.addObject(this.state.currentMarker);
+      // this.state.map.addObject(this.state.destinationMarker);
       this.state.map.addObject(group);
 
       this.state.map.getViewModel().setLookAtData({
@@ -292,8 +286,6 @@ class Map3 extends Component {
         startMarker.id = "start_point";
         endMarker.id = "end_point";
         this.removeObjectFromMap("route_line");
-        // this.removeObjectFromMap("start_point");
-        // this.removeObjectFromMap("end_point");
 
         // Add the route polyline and the two markers to the map:
         this.state.map.addObjects([routeLine]);
@@ -511,12 +503,12 @@ class Map3 extends Component {
       lat: coords.lat,
       lng: coords.lng,
     });
+    currentM.id = id;
     if (id === "start_point") {
       this.state.currentMarker = currentM;
     } else {
       this.state.destinationMarker = currentM;
     }
-    currentM.id = id;
     this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
     this.zoomToMarkers();
