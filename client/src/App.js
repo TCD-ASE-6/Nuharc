@@ -22,14 +22,13 @@ function App() {
       <Router>
         <NavBar />
         <Routes>
-          <Route exact path='/' element={<Map3 />} />
-          <Route path='/map' element={<Map2 />} />
-          <Route path='/map3' element={<Map3 />} />
-          <Route path='/login' element={<LoginPage />} />
-          <Route path='/signup' element={<Signup2 />} />
-          <Route path='/report' element={<ReportIncident />} />
-          <Route path='/update-incident' element={<UpdateIncident />} />
-          <Route path='/admin-navigator' element={<AdminNavigator />} />
+          <Route exact path="/" element={<Map3 />} />
+          <Route path="/map3" element={<Map3 />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<Signup2 />} />
+          <Route path="/report" element={<ReportIncident />} />
+          <Route path="/update-incident" element={<UpdateIncident />} />
+          <Route path="/admin-navigator" element={<AdminNavigator />} />
         </Routes>
       </Router>
     </Provider>
