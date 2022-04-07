@@ -1,9 +1,7 @@
-import React, { Component, useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { updateIncidentList } from "../../actions/incidentActions";
 import "../../App.css";
-import { connect } from "react-redux";
-import { Button, ListGroup, ListGroupItem } from "reactstrap";
+import { Button } from "reactstrap";
 import AutoComplete from "../AutoComplete/AutoComplete";
 
 // HERE API key
@@ -17,33 +15,25 @@ const INITIAL_ZOOM = 13;
 // Element Id of the destination span
 const DESTINATION_SPAN_ID = "destinationSpanId";
 
-class ReportIncident extends Component {
-  mapRef = React.createRef();
-  autocompleteRequest = new XMLHttpRequest();
+function ReportIncident(props) {
+  let mapRef = React.createRef();
+  let autocompleteRequest = new XMLHttpRequest();
+
   //HERE maps instance
-  H = window.H;
+  let H = window.H;
 
-  /**
-   * constructor
-   *
-   */
-  constructor(props) {
-    super(props);
-    this.state = {
-      map: null,
-      incidentCoordinates: null,
-      incidentType: "",
-      active: true,
-      incidentList: [],
-    };
-    //bind callbacks
-    this.updateIncidentList = this.updateIncidentList.bind(this);
-    // this.updateCurrentLocation = this.updateCurrentLocation.bind(this);
-    this.setIncidentLocation = this.setIncidentLocation.bind(this);
-    this.setCurrentPostion();
-  }
+  // Set State Hooks
+  let map;
+  const [incidentCoordinates, setIncidentCoordinates] = useState(null);
+  const [incidentType, setIncidentType] = useState("");
+  const [active, setActive] = useState(true);
+  const [incidentList, setIncidentList] = useState([]);
+  const [router, setRouter] = useState(null);
+  const [incidentAtDestination, setIncidentAtDestination] = useState(null);
+  const [destinationCoordinates, setDestinationCoordinates] = useState(null);
+  const [isFixedRoute, setIsFixedRoute] = useState(false);
 
-  getPlaceFromCoordinates(coords) {
+  const getPlaceFromCoordinates = (coords) => {
     let params =
       "?at=" +
       coords.lat +
@@ -62,97 +52,70 @@ class ReportIncident extends Component {
       .catch((err) => {
         console.log(err);
       });
-  }
+  };
 
   /**
    * componentDidMount hook
    *
    */
-  componentDidMount() {
-    const platform = new this.H.service.Platform({
+  useEffect(() => {
+    const platform = new H.service.Platform({
       apikey: API_KEY,
     });
 
     const defaultLayers = platform.createDefaultLayers();
 
-    const map = new this.H.Map(
-      this.mapRef.current,
-      defaultLayers.vector.normal.map,
-      {
-        center: { lat: DUBLIN_LAT, lng: DUBLIN_LNG },
-        zoom: INITIAL_ZOOM,
-        pixelRatio: window.devicePixelRatio || 1,
-      }
-    );
-    // real time traffic information
-    // map.addLayer(defaultLayers.vector.normal.traffic);
-    // real time traffic incidents
-    // map.addLayer(defaultLayers.vector.normal.trafficincidents);
+    const hereMap = new H.Map(mapRef.current, defaultLayers.vector.normal.map, {
+      center: { lat: DUBLIN_LAT, lng: DUBLIN_LNG },
+      zoom: INITIAL_ZOOM,
+      pixelRatio: window.devicePixelRatio || 1,
+    });
 
-    const behavior = new this.H.mapevents.Behavior(
-      new this.H.mapevents.MapEvents(map)
+    const behavior = new H.mapevents.Behavior(
+      new H.mapevents.MapEvents(hereMap)
     );
 
     // Create the default UI components to allow the user to interact with them
-    this.H.ui.UI.createDefault(map, defaultLayers);
+    H.ui.UI.createDefault(hereMap, defaultLayers);
     // add a resize listener to make sure that the map occupies the whole container
-    window.addEventListener("resize", () => map.getViewPort().resize());
+    window.addEventListener("resize", () => hereMap.getViewPort().resize());
 
-    this.setState(
-      { router: platform.getRoutingService(null, 8), map: map },
-      () => {
-        console.log(this.state.map, "Map State is set.");
-      }
-    );
-
-    // this.setEventListener(this.state.map);
-
-    //default coordinates to show fixed route (used in emergency dashboard)
-    if (
-      this.props &&
-      this.props.isFixedRoute &&
-      this.props.lat != null &&
-      this.props.lng != null
-    ) {
+    setRouter(platform.getRoutingService(null, 8));
+    map = hereMap;
+    if (props && props.isFixedRoute && props.lat != null && props.lng != null) {
       //TODO: hide location search bar
-      this.setState({
-        destinationCoordinates: {
-          lat: this.props.lat,
-          lng: this.props.lng,
-        },
-        isFixedRoute: true,
-        incidentAtDestination: this.props.incident,
-      });
+      setDestinationCoordinates({ lat: props.lat, lng: props.lng });
+      setIsFixedRoute(true);
+      setIncidentAtDestination(props.incident);
     }
-  }
 
-  setEventListener() {
-    this.state.map.addEventListener("tap", (event) => {
-      this.removeObjectFromMap("incidentLocation");
-      let coords = this.state.map.screenToGeo(
+    // to be run after constructor (above code)
+    // function sets current location from gps.
+    setCurrentPostion();
+
+    // return acts as component will unmount.
+    return () => {
+      map.dispose();
+    };
+  }, []);
+
+  const setEventListener = () => {
+    map.addEventListener("tap", (event) => {
+      removeObjectFromMap("incidentLocation");
+      let coords = map.screenToGeo(
         event.currentPointer.viewportX,
         event.currentPointer.viewportY
       );
-      this.setIncidentLocation(coords);
-      this.getPlaceFromCoordinates(coords);
+      setIncidentLocation(coords);
+      getPlaceFromCoordinates(coords);
     });
-  }
-
-  getCoordinatesOnClick() {}
-
-  /**
-   * componentWillUnmount hook
-   *
-   */
-  componentWillUnmount() {
-    this.state.map.dispose();
-  }
+  };
 
   /**
    * This function sets the currentCoordinates state to the current position of the user
    *
    */
-  async setCurrentPostion() {
+  const setCurrentPostion = async () => {
     // Getting the current location
     const options = {
       enableHighAccuracy: true,
@@ -161,13 +124,11 @@ class ReportIncident extends Component {
     };
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        this.setState({
-          incidentCoordinates: {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          },
+        setIncidentCoordinates({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
         });
-        this.setPositionMarker({
+        setPositionMarker({
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         });
@@ -177,7 +138,7 @@ class ReportIncident extends Component {
       },
       options
     );
-  }
+  };
 
   /**
    *
@@ -189,57 +150,44 @@ class ReportIncident extends Component {
    * ## ====================== ##
    * @param {*} objectID ID of the Object that is removed from the map.
    */
-  removeObjectFromMap(objectID) {
-    for (let object of this.state.map.getObjects()) {
+  const removeObjectFromMap = (objectID) => {
+    for (let object of map.getObjects()) {
       if (object.id === objectID) {
-        this.state.map.removeObject(object);
+        map.removeObject(object);
       }
     }
-  }
+  };
 
   /**
    * This function calculates the users current locations and,
    * set the marker on the map to show the current location
    */
-  setPositionMarker(coords) {
+  const setPositionMarker = (coords) => {
     try {
-      var currentM = new this.H.map.Marker({
+      var currentM = new H.map.Marker({
         lat: coords.lat,
         lng: coords.lng,
       });
-      // console.log(currentM);
-      console.log(this.state.map === null);
+      console.log(map === null);
       currentM.id = "incidentLocation";
-      this.removeObjectFromMap("incidentLocation");
-      this.state.map.addObject(currentM);
-      this.setEventListener();
+      removeObjectFromMap("incidentLocation");
+      map.addObject(currentM);
+      setEventListener();
     } catch (err) {
       console.log("Error in placing marker");
     }
-  }
+  };
 
-  setIncidentLocation(coords) {
+  const setIncidentLocation = (coords) => {
     try {
       console.log(coords);
-      this.setState({
-        incidentCoordinates: {
-          lat: coords.lat,
-          lng: coords.lng,
-        },
-      });
-      this.setPositionMarker(this.state.incidentCoordinates);
+      setIncidentCoordinates({ lat: coords.lat, lng: coords.lng });
+      let coordinates = { lat: coords.lat, lng: coords.lng };
+      setPositionMarker(coordinates);
     } catch (err) {
       console.log("Error in fetching coordinates");
     }
-  }
-
-  /**
-   * This function updates the redux store with the current list of active incidents
-   *
-   */
-  updateIncidentList() {
-    this.props.updateIncidentList();
-  }
+  };
 
   /**
    * Gets called when user presses the submit button to report an incident.
@@ -249,17 +197,17 @@ class ReportIncident extends Component {
   onsubmit = (e) => {
     e.preventDefault();
     const data = {
-      longitude: this.state.incidentCoordinates.lng,
-      latitude: this.state.incidentCoordinates.lat,
-      incidentType: this.state.incidentType,
-      active: this.state.active,
+      longitude: incidentCoordinates.lng,
+      latitude: incidentCoordinates.lat,
+      incidentType: incidentType,
+      active: active,
     };
 
     console.log(data);
 
     axios.post("/api/incident/report", data).then((res) => {
       //update incidentList in redux store after incident was added
-      this.updateIncidentList();
+      // updateIncidentList();
     });
   };
 
@@ -268,48 +216,38 @@ class ReportIncident extends Component {
    * This function updates the incidentType in the state accordingly
    * @param {*} event contains the new selected value for incidentType
    */
-  onChangeValue = (event) => {
-    this.setState({
-      incidentType: event.target.value,
-    });
+  const onChangeValue = (event) => {
+    setIncidentType(event.target.value);
   };
 
   /**
    * This function renders the component to the screen
    *
    */
-  render() {
-    return (
-      <div>
-        {/* {this.updateCurrentLocation()} */}
-        <Button onClick={() => this.setCurrentPostion()}>
-          Current Location
-        </Button>
-        <AutoComplete updateLocation={this.setIncidentLocation} />
-        <p>Report an Incident</p>
-        <div ref={this.mapRef} style={{ height: "50vh" }}></div>
-        <div onChange={this.onChangeValue}>
-          <div>
-            <input type="radio" value="Fire" name="incident" /> Fire
-          </div>
-          <div>
-            <input type="radio" value="Explosion" name="incident" /> Explosion
-          </div>
-          <div>
-            <input type="radio" value="CarAccident" name="incident" /> Car
-            Accident
-          </div>
+  return (
+    <div>
+      {/* {this.updateCurrentLocation()} */}
+      <Button onClick={() => setCurrentPostion()}>Current Location</Button>
+      <AutoComplete updateLocation={setIncidentLocation} />
+      <p>Report an Incident</p>
+      <div ref={mapRef} style={{ height: "50vh" }}></div>
+      <div onChange={onChangeValue}>
+        <div>
+          <input type="radio" value="Fire" name="incident" /> Fire
         </div>
-        <button onClick={this.onsubmit} type="submit">
-          Submit
-        </button>
+        <div>
+          <input type="radio" value="Explosion" name="incident" /> Explosion
+        </div>
+        <div>
+          <input type="radio" value="CarAccident" name="incident" /> Car
+          Accident
+        </div>
       </div>
-    );
-  }
+      <button onClick={onsubmit} type="submit">
+        Submit
+      </button>
+    </div>
+  );
 }
 
-const mapStateToProps = (state) => ({
-  incidentList: state.incidentList,
-});
-
-export default connect(mapStateToProps, { updateIncidentList })(ReportIncident);
+export default ReportIncident;
