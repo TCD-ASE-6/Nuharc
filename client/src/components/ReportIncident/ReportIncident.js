@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../../App.css";
 import { Button } from "reactstrap";
+import { useNavigate } from "react-router-dom";
 import AutoComplete from "../AutoComplete/AutoComplete";
 
 // HERE API key
@@ -18,10 +19,10 @@ const DESTINATION_SPAN_ID = "destinationSpanId";
 function ReportIncident(props) {
   let mapRef = React.createRef();
   let autocompleteRequest = new XMLHttpRequest();
-
+  
   //HERE maps instance
   let H = window.H;
-
+  
   // Set State Hooks
   let map;
   const [incidentCoordinates, setIncidentCoordinates] = useState(null);
@@ -32,6 +33,8 @@ function ReportIncident(props) {
   const [incidentAtDestination, setIncidentAtDestination] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [isFixedRoute, setIsFixedRoute] = useState(false);
+  
+  const navigate = useNavigate();
 
   const getPlaceFromCoordinates = (coords) => {
     let params =
@@ -206,8 +209,12 @@ function ReportIncident(props) {
     console.log(data);
 
     axios.post("/api/incident/report", data).then((res) => {
-      //update incidentList in redux store after incident was added
+      // update incidentList in redux store after incident was added
+      // Below Call Not needed.
       // updateIncidentList();
+
+      // redirect to home page
+      navigate("/");
     });
   };
 
