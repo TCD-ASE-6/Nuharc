@@ -16,9 +16,9 @@ function dummyResolver () {
  * @param {*} param1 
  * @returns 
  */
-async function sendSuccessResponse (res, { info, extensive, statusOk, headers }) {
+async function sendSuccessResponse (res, { info, extensive, statusSuccess, headers }) {
   res.setHeader('Content-Type', 'application/json')
-  res.writeHead(statusOk, headers)
+  res.writeHead(statusSuccess, headers)
   if (info) {
     return res.end(
       JSON.stringify(
@@ -77,7 +77,7 @@ async function sendFailureResponse (res, options) {
   }))
 }
 
-const intialState = {
+const startingState = {
   isShuttingDown: false
 }
 
@@ -88,7 +88,7 @@ function dummy () {}
 
 
 function wrapWithHealthChecks (server, state, opts) {
-  const { headers, healthChecks, logger, statusError, onSendFailureWithShutdown, sendFailuresWithShutdown, statusOk} = opts
+  const { headers, healthChecks, logging, statusError, onSendFailureWithShutdown, sendFailuresWithShutdown, statusSuccess} = opts
 
   let isHandlerEnabled = false
   const handler = (listener) => {
@@ -102,7 +102,7 @@ function wrapWithHealthChecks (server, state, opts) {
         try {
           info = await healthCheckCallback({ state })
         } catch (error) {
-          logger('healthcheck process has failed', error)
+          logging('healthcheck process has failed', error)
           return sendFailureResponse(
             response,
             {
@@ -116,7 +116,7 @@ function wrapWithHealthChecks (server, state, opts) {
         }
         return sendSuccessResponse(
           response,
-          { info, verbatim: healthChecks.verbatim, statusOk, headers }
+          { info, verbatim: healthChecks.verbatim, statusSuccess, headers }
         )
       }
 
@@ -150,7 +150,7 @@ function wrapWithHealthChecks (server, state, opts) {
  * @param {*} opts 
  */
 function wrapWithSignalHandler (server, state, opts) {
-  const { signals, onSignal, beforeShutdown, onShutdown, timeout, logger } = opts
+  const { signals, onSignal, beforeShutdown, onShutdown, timeout, logging } = opts
 
   stoppable(server, timeout)
 
@@ -171,7 +171,7 @@ function wrapWithSignalHandler (server, state, opts) {
         signals.forEach(sig => process.removeListener(sig, cleanup))
         process.kill(process.pid, signal)
       } catch (error) {
-        logger('error happened during shutdown', error)
+        logging('error happened during shutdown', error)
         process.exit(1)
       }
     }
@@ -183,7 +183,7 @@ function wrapWithSignalHandler (server, state, opts) {
 
 function healthCheckManager (server, opts = {}) {
   // Adding suppport for case insensitive routes
-  if (opts.caseInsensitive && opts.healthChecks) {
+  if (opts.caseInsensitiveFlag && opts.healthChecks) {
     const healthChecksObj = {}
 
     for (const key in opts.healthChecks) {
@@ -193,31 +193,31 @@ function healthCheckManager (server, opts = {}) {
   }
 
   const {
-    healthChecks = {},
-    sendFailuresWithShutdown = true,
-    onSendFailureWithShutdown,
-    signal = CONSTANTS.SIGNAL_TERMINATE,
     signals = [],
     timeout = 1000,
     onShutdown = dummyResolver,
     beforeShutdown = dummyResolver,
-    logger = dummy,
-    caseInsensitive = false,
-    statusOk = 200,
+    healthChecks = {},
+    sendFailuresWithShutdown = true,
+    onSendFailureWithShutdown,
+    signal = CONSTANTS.SIGNAL_TERMINATE,
+    logging = dummy,
+    caseInsensitiveFlag = false,
+    statusSuccess = 200,
     statusError = 500,
     headers = opts.headers || {}
   } = opts
   const onSignal = opts.onSignal || opts.onSigterm || dummyResolver
-  const state = Object.assign({}, intialState)
+  const actualState = Object.assign({}, startingState)
 
   if (Object.keys(healthChecks).length > 0) {
-    wrapWithHealthChecks(server, state, {
+    wrapWithHealthChecks(server, actualState, {
       healthChecks,
-      logger,
+      logging,
       sendFailuresWithShutdown,
       onSendFailureWithShutdown,
-      caseInsensitive,
-      statusOk,
+      caseInsensitiveFlag,
+      statusSuccess,
       statusError,
       headers
     })
@@ -225,13 +225,13 @@ function healthCheckManager (server, opts = {}) {
 
 // Ensuring backwards compatibility for signals
   if (!signals.includes(signal)) signals.push(signal)
-  wrapWithSignalHandler(server, state, {
+  wrapWithSignalHandler(server, actualState, {
     signals,
     onSignal,
     beforeShutdown,
     onShutdown,
     timeout,
-    logger,
+    logging,
     headers
   })
 

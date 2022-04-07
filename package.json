@@ -8,7 +8,8 @@
     "server": "SET NODE_ENV=development & nodemon server.js",
     "client": "npm start --prefix client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "prod": "concurrently \"npm run start\" \"npm run client\""
+    "prod": "concurrently \"npm run start\" \"npm run client\"",
+    "health-checks-test": "mocha loadBalancers/health-checks/health-checks.spec.js"
   },
   "repository": {
     "type": "git",

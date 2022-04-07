@@ -7,7 +7,7 @@ const SIGNAL_ARGUMENT = process.argv[2]
 
 createHealthCheckManager(server, {
   onSignal: () => {
-    console.log('on-' + SIGNAL_ARGUMENT.toLowerCase() + '-runs')
+    console.log('on-' + SIGNAL_ARGUMENT.toLowerCase() + '-done')
     return Promise.resolve()
   },
   signal: SIGNAL_ARGUMENT,

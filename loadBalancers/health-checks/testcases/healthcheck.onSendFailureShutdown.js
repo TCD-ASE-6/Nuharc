@@ -7,7 +7,7 @@ const CONSTANTS = require("../../util").CONSTANTS
 
 createHealthCheckManager(server, {
   healthChecks: {
-    '/health': () => Promise.reject(new Error('failure'))
+    '/healthInfo': () => Promise.reject(new Error('failure'))
   },
   onSendFailureWithShutdown: async () => {
     console.log('onSendFailureWithShutdown')

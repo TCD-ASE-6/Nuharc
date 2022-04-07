@@ -14,6 +14,6 @@ module.exports.shuffleList =  function shuffleList(list) {
 }
 
 module.exports.CONSTANTS = {
-  SIGNAL_TERMINATE: "SIGNAL_TERMINATE",
-  SIGNAL_INTERNAL: "SIG_INTERNAL"
+  SIGNAL_TERMINATE: "SIGTERM",
+  SIGNAL_INTERNAL: "SIGINT"
 }

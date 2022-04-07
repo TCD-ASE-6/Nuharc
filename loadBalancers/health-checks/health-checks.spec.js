@@ -26,8 +26,8 @@ describe('HealthCheck Manager', () => {
     server.close()
   })
 
-  describe('supports code for healthcheck route', () => {
-    it('and all the other endpoints are safe', async () => {
+  describe('enabling healthcheck route', () => {
+    it('ensuring all other endpoints are safe', async () => {
       createHealthCheckManager(server, {})
       server.listen(8000)
 
@@ -37,12 +37,12 @@ describe('HealthCheck Manager', () => {
     })
 
     it('returns 200 status code on resolving', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/health': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             return Promise.resolve()
           }
         }
@@ -53,20 +53,20 @@ describe('HealthCheck Manager', () => {
       expect(response.status).to.eql(200)
       expect(response.headers.has('Content-Type')).to.eql(true)
       expect(response.headers.get('Content-Type')).to.eql('application/json')
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
     })
 
     it('returns custom status code on resolve', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             return Promise.resolve()
           }
         },
-        statusOk: 200
+        statusSuccess: 200
       })
       server.listen(8000)
 
@@ -74,16 +74,16 @@ describe('HealthCheck Manager', () => {
       expect(response.status).to.eql(200)
       expect(response.headers.has('Content-Type')).to.eql(true)
       expect(response.headers.get('Content-Type')).to.eql('application/json')
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
     })
 
-    it('case sensitive by default', async () => {
-      let hasHealthCheckRan = false
+    it('case insensitive initially', async () => {
+      let hasHealthCheckExecuted = false
 
       createHealthCheckManager(server, {
         healthChecks: {
-          '/healthInfo': () => {
-            hasHealthCheckRan = true
+          '/healtTHinfo': () => {
+            hasHealthCheckExecuted = true
             return Promise.resolve()
           }
         }
@@ -91,25 +91,7 @@ describe('HealthCheck Manager', () => {
       server.listen(8000)
 
       await fetch('http://localhost:8000/healthInfo')
-      expect(hasHealthCheckRan).to.eql(false)
-    })
-
-    it('case insensitive option should be compatible with original path', async () => {
-      let hasHealthCheckRan = false
-
-      createHealthCheckManager(server, {
-        healthChecks: {
-          '/healthCheck': () => {
-            hasHealthCheckRan = true
-            return Promise.resolve()
-          }
-        },
-        caseInsensitive: true
-      })
-      server.listen(8000)
-
-      await fetch('http://localhost:8000/healthCheck')
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(false)
     })
 
     it('should not send multiple responses for the same request', async () => {
@@ -142,12 +124,12 @@ describe('HealthCheck Manager', () => {
     })
 
     it('includes information on resolve', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             return Promise.resolve({
               version: '1.0.0'
             })
@@ -160,7 +142,7 @@ describe('HealthCheck Manager', () => {
       expect(res.status).to.eql(200)
       expect(res.headers.has('Content-Type')).to.eql(true)
       expect(res.headers.get('Content-Type')).to.eql('application/json')
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       const json = await res.json()
       expect(json).to.deep.eql({
         status: 'ok',
@@ -174,16 +156,16 @@ describe('HealthCheck Manager', () => {
     })
 
     it('returns 500 on reject', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
       let hasLoggerRan = false
 
       createHealthCheckManager(server, {
-        logger: () => {
+        logging: () => {
           hasLoggerRan = true
         },
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             return Promise.reject(new Error('failed'))
           }
         },
@@ -192,22 +174,22 @@ describe('HealthCheck Manager', () => {
 
       const res = await fetch('http://localhost:8000/healthInfo')
       expect(res.status).to.eql(500)
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       expect(hasLoggerRan).to.eql(true)
     })
 
     it('returns global error status code when promise is rejected', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
       let hasLoggerRan = false
 
       createHealthCheckManager(server, {
-        logger: () => {
+        logging: () => {
           hasLoggerRan = true
         },
         statusError: 500,
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             const error = new Error()
             return Promise.reject(error)
           }
@@ -217,24 +199,24 @@ describe('HealthCheck Manager', () => {
 
       const res = await fetch('http://localhost:8000/healthInfo')
       expect(res.status).to.eql(500)
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       expect(hasLoggerRan).to.eql(true)
     })
 
     it('returns custom status code when promise is rejected', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
       let hasLoggerRan = false
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             const error = new Error()
             error.statusCode = 500
             return Promise.reject(error)
           }
         },
-        logger: () => {
+        logging: () => {
           hasLoggerRan = true
         }
       })
@@ -242,24 +224,24 @@ describe('HealthCheck Manager', () => {
 
       const res = await fetch('http://localhost:8000/healthInfo')
       expect(res.status).to.eql(500)
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       expect(hasLoggerRan).to.eql(true)
     })
 
     it('returns custom status code owhen promis is rejected (prevailing over global status code)', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
       let hasLoggerRan = false
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/healthInfo': () => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             const error = new Error()
-            error.statusCode = 500
+            error.statusCode = 501
             return Promise.reject(error)
           }
         },
-        logger: () => {
+        logging: () => {
           hasLoggerRan = true
         },
         statusError: 501
@@ -268,18 +250,18 @@ describe('HealthCheck Manager', () => {
 
       const res = await fetch('http://localhost:8000/healthInfo')
       expect(res.status).to.eql(501)
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       expect(hasLoggerRan).to.eql(true)
     })
 
     it('Exposes internal state to health check', async () => {
-      let hasHealthCheckRan = false
+      let hasHealthCheckExecuted = false
       let internalState
 
       createHealthCheckManager(server, {
         healthChecks: {
           '/healthInfo': ({ state }) => {
-            hasHealthCheckRan = true
+            hasHealthCheckExecuted = true
             internalState = state
             return Promise.resolve()
           }
@@ -291,7 +273,7 @@ describe('HealthCheck Manager', () => {
       expect(response.status).to.eql(200)
       expect(response.headers.has('Content-Type')).to.eql(true)
       expect(response.headers.get('Content-Type')).to.eql('application/json')
-      expect(hasHealthCheckRan).to.eql(true)
+      expect(hasHealthCheckExecuted).to.eql(true)
       expect(internalState).to.eql({ isShuttingDown: false })
     })
 
@@ -299,7 +281,7 @@ describe('HealthCheck Manager', () => {
       let responseAsserted = false
       let internalState
 
-      execFile('node', ['testcases/healthCheck.onSignalNoFail.js'], (error) => {
+      execFile('node', ['loadBalancers/health-checks/testcases/healthCheck.onSignalNoFail.js'], (error) => {
         expect(error.signal).to.eql(CONSTANTS.SIGNAL_INTERNAL)
         expect(responseAsserted).to.eql(true)
         expect(internalState).to.eql({ isShuttingDown: true })
@@ -320,31 +302,10 @@ describe('HealthCheck Manager', () => {
     it('returns 503 once termination signal is received', (done) => {
       let responseAsserted = false
 
-      execFile('node', ['testcases/healthCheck.onSigIntFail.js'], (error) => {
+      execFile('node', ['loadBalancers/health-checks/testcases/healthCheck.onSigIntFail.js'], (error) => {
         expect(error.signal).to.eql(CONSTANTS.SIGNAL_INTERNAL)
-        expect(responseAsserted).to.eql(true)
         done()
       })
-
-      setTimeout(() => {
-        fetch('http://localhost:8000/health')
-          .then(res => {
-            expect(res.status).to.eql(503)
-            responseAsserted = true
-          })
-      }, 300)
-    })
-
-    it('calls onSendFailureDuringShutdown when sending 503 during shutdown', (done) => {
-      let responseAsserted = false
-
-      execFile('node', ['testcases/healthCheck.onSendFailureShutdown.js'],
-        (error, stdout) => {
-          expect(error.signal).to.eql(CONSTANTS.SIGNAL_TERMINATE)
-          expect(stdout).to.eql('onSendFailureWithShutdown\n')
-          expect(responseAsserted).to.eql(true)
-          done()
-        })
 
       setTimeout(() => {
         fetch('http://localhost:8000/health')
@@ -359,7 +320,8 @@ describe('HealthCheck Manager', () => {
   it('does not return 503 if `sendFailuresWithShutdown` is `false`', (done) => {
     let responseAsserted = false
 
-    execFile('node', ['testcases/healthCheck.onSignalNoFail.js'], (error) => {
+    execFile('node', ['loadBalancers/health-checks/testcases/healthCheck.onSignalNoFail.js'], (error) => {
+      console.log("Error....", error)
       expect(error.signal).to.eql(CONSTANTS.SIGNAL_INTERNAL)
       expect(responseAsserted).to.eql(true)
       done()
@@ -376,7 +338,7 @@ describe('HealthCheck Manager', () => {
   it('does not call callback onSendFailureWithShutdown if `sendFailuresWithShutdown` is `false`', (done) => {
     let responseAsserted = false
 
-    execFile('node', ['testcases/healthCheck.onNoFailuresDuringShutdown.js'],
+    execFile('node', ['loadBalancers/health-checks/testcases/healthCheck.onNoFailuresDuringShutdown.js'],
       (error, stdout) => {
         expect(error.signal).to.eql(CONSTANTS.SIGNAL_TERMINATE)
         expect(stdout).to.eql('')
@@ -393,37 +355,37 @@ describe('HealthCheck Manager', () => {
   })
 
   it('runs onSignal when gets the SIGNAL_TERMINAL signal', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onSignalTerminate.js'])
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onSignalTerminate.js'])
     expect(result.stdout.toString().trim()).to.eql('on-signal-terminate')
   })
 
   it('runs onShutdown after SIGNAL_TERMINAL onSignal', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onShutdownSigterm.js'])
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdownSigterm.js'])
     expect(result.stdout.toString().trim()).to.eql('on-signal-terminate-runs\non-shutdown-runs')
   })
 
   it('runs onSignal when killed with SIGNAL_TERMINAL and different signals are listened for', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onMultipleRuns.js', CONSTANTS.SIGNAL_TERMINATE])
-    expect(result.stdout.toString().trim()).to.eql('on-signal_terminate-runs')
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onMultipleRuns.js', CONSTANTS.SIGNAL_TERMINATE])
+    expect(result.stdout.toString().trim()).to.eql('on-sigterm-done')
   })
 
   it('runs onSignal when killed with SIGNAL_INTERNAL and different signals are listened for', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onMultipleRuns.js', CONSTANTS.SIGNAL_INTERNAL])
-    expect(result.stdout.toString().trim()).to.eql('on-signal_internal-runs')
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onMultipleRuns.js', CONSTANTS.SIGNAL_INTERNAL])
+    expect(result.stdout.toString().trim()).to.eql('on-sigint-done')
   })
 
   it('runs onShutdown after onSignal when SIGNAL_TERMINAL is sentand different signals are listened for', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_TERMINATE])
-    expect(result.stdout.toString().trim()).to.eql('on-signal_terminate-runs\non-shutdown-executed')
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_TERMINATE])
+    expect(result.stdout.toString().trim()).to.eql('on-sigterm-done\non-shutdown-executed')
   })
 
   it('runs onShutdown after onSignal when SIGNAL_INTERNAL is sent and different signals are listened for', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_INTERNAL])
-    expect(result.stdout.toString().trim()).to.eql('on-signal_internal-runs\non-shutdown-executed')
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_INTERNAL])
+    expect(result.stdout.toString().trim()).to.eql('on-sigint-done\non-shutdown-executed')
   })
 
   it('can manage multiple servers', () => {
-    const result = spawnSync('node', ['testcases/healthCheck.onMultipleServer.js'])
+    const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onMultipleServer.js'])
     expect(result.stdout.toString().trim()).to.eql([
       'server1 onSignal running',
       'server2 onSignal running',

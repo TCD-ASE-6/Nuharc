@@ -11,7 +11,7 @@ const SIGNAL_TERM = process.argv[2]
 createHealthCheckManager(server, {
   signals: SIGNALS_LIST,
   onSignal: () => {
-    console.log('on-' + SIGNAL_TERM.toLowerCase() + '-runs')
+    console.log('on-' + SIGNAL_TERM.toLowerCase() + '-done')
     return Promise.resolve()
   },
   onShutdown: () => {
