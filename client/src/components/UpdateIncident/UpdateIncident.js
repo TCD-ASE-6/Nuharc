@@ -5,8 +5,6 @@ import {
   Row,
   Button,
   Col,
-  Card,
-  CardBody,
   Container,
   ListGroup,
   ListGroupItem,
@@ -36,9 +34,6 @@ function UpdateIncident() {
     console.log(incident.id);
     const latitude = incident.longitude.$numberDecimal;
     const longitude = incident.latitude.$numberDecimal;
-    // TODO: fix API
-    // const response = await axios.put("/api/incident/" + id, {});
-    // console.log(response);
     navigate("/admin-navigator", { state: { longitude, latitude, incident } });
   };
 
