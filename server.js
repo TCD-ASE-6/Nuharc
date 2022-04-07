@@ -5,6 +5,7 @@ const passport = require("passport");
 const config = require("config");
 const bodyParser = require("body-parser");
 const request = require("request");
+const createHealthCheckManager = require("./loadBalancers/health-checks/index").createHealthCheckManager
 
 //APIs
 const directionsAPI = require("./routes/api/directions");
@@ -44,24 +45,6 @@ const weightedRoundRobinHandler = (req, res) => {
   req.pipe(_req).pipe(res);
 };
 
-// Add the client URL to the CORS policy
-// const whitelist = process.env.WHITELISTED_DOMAINS
-//   ? process.env.WHITELISTED_DOMAINS.split(",")
-//   : [];
-
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     console.log(origin);
-//     if (!origin || whitelist.indexOf(origin) !== -1) {
-//       callback(null, true);
-//     } else {
-//       callback(new Error("Not allowed by CORS"));
-//     }
-//   },
-
-//   credentials: true,
-// };
-
 // Get MongoDbURI according to ENV script
 const db =
   process.env.NODE_ENV.trim() === "production"
@@ -98,7 +81,67 @@ app2.use("/api/incident", incidentsAPI);
 
 // const port = process.env.PORT || 8080;
 
-const server = express().get("*", weightedRoundRobinHandler).post("*", weightedRoundRobinHandler);
+const server = express().get("*", weightedRoundRobinHandler).post("*", weightedRoundRobinHandler)
+
+const beforeShutdownCallback = () => {
+  console.log("Shutdown in Progress")
+}
+
+const onShutdownCallback = () => {
+  console.log("Shutdown has occured")
+}
+
+const healthCheckLogger = (log, error) => {
+  console.log("Log from healthcheck...", log)
+  console.log("Error from healthcheck...", error)
+}
+
+const onSendFailureWithShutdownLogger = () => {
+  console.log("Sending failure has occcured for Shutdown ")
+}
+
+const livenessCheck = () => new Promise((resolve, _reject) => {
+  // TODO: Need to add logic overhere to set app functioning correctly
+  const appFunctioning = true;
+  if (appFunctioning) {
+    resolve();
+  } else {
+    reject(new Error("App is not functioning correctly"));
+  }
+});
+
+/**
+ * Code to support graceful shutdown for the database in case shutdown occurs
+ */
+
+function onSigterm () {
+  console.log('server is starting cleanup')
+  // Adding graceful shudown for database
+  return Promise.all([
+    mongoose.connection.close()
+  ])
+}
+
+const options = { 
+  timeout: 1000,
+  onShutdown: onShutdownCallback,
+  beforeShutdown: beforeShutdownCallback,
+  healthChecks: {
+   "/health/liveness": livenessCheck,
+    __unsafeExposeStackTraces: true,
+    verbatim: true, 
+  },
+  sendFailuresWithShutdown: true,
+  onSendFailureWithShutdown: onSendFailureWithShutdownLogger,
+  logging: healthCheckLogger,
+  statusSuccess:200,
+  statusError: 500,
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+  },
+  onSignal: onSigterm
+} 
+createHealthCheckManager(server, options);
 
 server.listen(8080);
 
