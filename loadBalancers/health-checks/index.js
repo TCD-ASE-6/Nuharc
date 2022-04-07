@@ -238,4 +238,6 @@ function healthCheckManager (server, opts = {}) {
   return server
 }
 
-module.exports.createHealthCheckManager = healthCheckManager
+module.exports = {
+  createHealthCheckManager : healthCheckManager
+}
