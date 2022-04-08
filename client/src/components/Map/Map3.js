@@ -211,12 +211,15 @@ class Map3 extends Component {
    * This function calculates the nearest safe zone from current position
    */
   calculateNearestSafeZone(){
-    
+    let distanceList=[]
+    let counter=1
     for (let currSafeZone in this.state.safeZones){
-
+      let distance = this.currentCoordinates.distance(currSafeZone.getPosition());
+      distanceList.push({count: counter, distance: distance})
+      counter=counter+1
     }
-    const distance = distance_marker.getPosition().distance(safe_zone.getPosition());
-    console.log(distance);
+    
+    console.log(distanceList);
   }
 
 
