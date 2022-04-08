@@ -44,6 +44,9 @@ class Map3 extends Component {
    */
   constructor(props) {
     super(props);
+    const safe_zone_1 = new this.H.geo.Point(SAFE_LAT_1,SAFE_LNG_1);
+    const safe_zone_2 = new this.H.geo.Point(SAFE_LAT_2,SAFE_LNG_2);
+    const safe_zone_3 = new this.H.geo.Point(SAFE_LAT_3,SAFE_LNG_3);
     this.state = {
       map: null,
       destinationCoordinates: {
@@ -55,6 +58,7 @@ class Map3 extends Component {
       router: null,
       currentMarker: null,
       destinationMarker: null,
+      safeZones: [safe_zone_1,safe_zone_2,safe_zone_3],
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
@@ -159,7 +163,6 @@ class Map3 extends Component {
    *
    */
   async setCurrentPostion() {
-    console.log("sset post")
     // Getting the current location
     const options = {
       enableHighAccuracy: true,
@@ -193,6 +196,9 @@ class Map3 extends Component {
             break;
           }
         }
+        if (posInDisasterArea) {
+          this.calculateNearestSafeZone();
+        }
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -205,12 +211,12 @@ class Map3 extends Component {
    * This function calculates the nearest safe zone from current position
    */
   calculateNearestSafeZone(){
+    
+    for (let currSafeZone in this.state.safeZones){
 
-    const distance_marker = new this.H.map.Marker({ lat: this.position.coords.latitude, lng: this.position.coords.latitude });
-    const safe_zone = new this.H.map.Marker({ lat: SAFE_LAT_1, lng: SAFE_LNG_1 });
+    }
     const distance = distance_marker.getPosition().distance(safe_zone.getPosition());
     console.log(distance);
-
   }
 
 
@@ -369,7 +375,6 @@ class Map3 extends Component {
   }
 
   async calculateOriginalRoute() {
-    console.log("orig")
     let routingParameters = {
       routingMode: ROUTING_MODE,
       transportMode: TRANSPORT_MODE,
@@ -588,7 +593,7 @@ class Map3 extends Component {
             <button onClick={() => {this.calculateOriginalRoute();this.calculateRoute();}}>
               Calculate Route
             </button>
-            <button onClick={() => {this.setCurrentPostion();this.calculateNearestSafeZone();}}>
+            <button onClick={() => {this.setCurrentPostion();}}>
               Find Current Location
             </button>
           </div>
