@@ -18,6 +18,13 @@ const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
 
+const SAFE_LAT_1 = 53.33810241909542;
+const SAFE_LNG_1 = -6.2587451872999305;
+const SAFE_LAT_2 = 53.33971103377993;
+const SAFE_LNG_2 = -6.249285026362085;
+const SAFE_LAT_3 = 53.35674586966649;
+const SAFE_LNG_3 = -6.257488946686209;
+
 class Map3 extends Component {
   mapRef = React.createRef();
   autocompleteRequest = new XMLHttpRequest();
@@ -73,7 +80,7 @@ class Map3 extends Component {
     // real time traffic information
     map.addLayer(defaultLayers.vector.normal.traffic);
     // real time traffic incidents
-    map.addLayer(defaultLayers.vector.normal.trafficincidents);
+    //map.addLayer(defaultLayers.vector.normal.trafficincidents);
 
     const behavior = new this.H.mapevents.Behavior(
       new this.H.mapevents.MapEvents(map)
@@ -166,6 +173,7 @@ class Map3 extends Component {
           },
           "start_point"
         );
+        
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -174,6 +182,9 @@ class Map3 extends Component {
     );
   }
 
+  /**
+   * This function sets the map state so its zoomed to the calculated route with both markers
+   */
   zoomToMarkers() {
     this.removeObjectFromMap("group");
     if (!(this.state.destinationMarker === null)) {
@@ -188,7 +199,6 @@ class Map3 extends Component {
       // this.state.map.addObject(this.state.currentMarker);
       // this.state.map.addObject(this.state.destinationMarker);
       this.state.map.addObject(group);
-
       this.state.map.getViewModel().setLookAtData({
         bounds: group.getBoundingBox(),
       });
@@ -200,33 +210,33 @@ class Map3 extends Component {
    *
    */
   createSafeZones() {
-    var circleStyle = {
+    let circleStyle = {
       strokeColor: "darkgreen",
       fillColor: "rgba(0, 188, 71, 0.4)",
       lineWidth: 10,
     };
 
-    var zone = new this.H.map.Circle(
-      { lat: 53.33810241909542, lng: -6.2587451872999305 },
+    let zone = new this.H.map.Circle(
+      { lat: SAFE_LAT_1, lng: SAFE_LNG_1 },
       200,
       { style: circleStyle }
     );
     zone.id = "safe_zone";
     this.state.map.addObject(zone);
-    var zone = new this.H.map.Circle(
-      { lat: 53.33971103377993, lng: -6.249285026362085 },
+    let zone1 = new this.H.map.Circle(
+      { lat: SAFE_LAT_2, lng: SAFE_LNG_2 },
       130,
       { style: circleStyle }
     );
     zone.id = "safe_zone";
-    this.state.map.addObject(zone);
-    var zone = new this.H.map.Circle(
-      { lat: 53.35674586966649, lng: -6.257488946686209 },
+    this.state.map.addObject(zone1);
+    let zone2 = new this.H.map.Circle(
+      { lat: SAFE_LAT_3, lng: SAFE_LNG_3 },
       100,
       { style: circleStyle }
     );
     zone.id = "safe_zone";
-    this.state.map.addObject(zone);
+    this.state.map.addObject(zone2);
   }
 
   /**
@@ -248,10 +258,15 @@ class Map3 extends Component {
    * @param {*} objectID ID of the Object that is removed from the map.
    */
   removeObjectFromMap(objectID) {
-    for (let object of this.state.map.getObjects()) {
-      if (object.id === objectID) {
-        this.state.map.removeObject(object);
+    //map might not be set
+    try{
+      for (let object of this.state.map.getObjects()) {
+        if (object.id === objectID) {
+          this.state.map.removeObject(object);
+        }
       }
+    } catch(error){
+      console.log("Error in remove map: " + error)
     }
   }
 
@@ -270,7 +285,9 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "blue", lineWidth: 3 },
+          style: { strokeColor: "blue", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
+          lineTailCap: 'arrow-tail',
+          lineHeadCap: 'arrow-head'},
         });
 
         // Create a marker for the start point:
@@ -294,11 +311,11 @@ class Map3 extends Component {
   }
 
   /**
-   * Callback which contains the routing result from the HERE API (original route)
-   * TODO: remove duplicate code
-   * @param {*} result answer from the server whıch contains the route
+   * Callback whıch contaıns the routıng result from the HERE API
+   *
+   * @param {*} result answer from the server whıch contaıns the route
    */
-  onOriginalRoutingResult(result) {
+   onOriginalRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -308,7 +325,7 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "grey", lineWidth: 3 },
+          style: { strokeColor: "grey", lineWidth: 5 },
         });
         this.removeObjectFromMap("orig_route_line");
         routeLine.id = "orig_route_line";
@@ -319,10 +336,8 @@ class Map3 extends Component {
     }
   }
 
-  /**
-   * This function calculates the route without disaster zones
-   */
   async calculateOriginalRoute() {
+    console.log("orig")
     let routingParameters = {
       routingMode: ROUTING_MODE,
       transportMode: TRANSPORT_MODE,
@@ -342,9 +357,8 @@ class Map3 extends Component {
         routingParameters,
         this.onOriginalRoutingResult,
         function (error) {
-          alert(error.message);
-        }
-      );
+          console.log(error.message);
+        });
     } else {
       console.log("Could not calculate route. Router is null");
     }
@@ -387,14 +401,17 @@ class Map3 extends Component {
         routingParameters,
         this.onRoutingResult,
         function (error) {
-          alert(error.message);
-        }
-      );
+          console.log(error.message);
+        });
     } else {
       console.log("Could not calculate route. Router is null");
     }
   }
 
+  /**
+   * This function adds the markers of dublin bikes stations to the map. If you hover over the symbol, the
+   * current occupancy is displayed.
+   */
   addDublinBikeMarkerToMap() {
     let request = new XMLHttpRequest();
     request.addEventListener("load", (event) => {
@@ -499,7 +516,8 @@ class Map3 extends Component {
    * set the marker on the map to show the current location
    */
   setPositionMarker(coords, id) {
-    var currentM = new this.H.map.Marker({
+    let inDisasterArea = false;
+    let currentM = new this.H.map.Marker({
       lat: coords.lat,
       lng: coords.lng,
     });
@@ -532,7 +550,7 @@ class Map3 extends Component {
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />
-            <button onClick={() => this.calculateRoute()}>
+            <button onClick={() => {this.calculateOriginalRoute();this.calculateRoute();}}>
               Calculate Route
             </button>
             <button onClick={() => this.setCurrentPostion()}>
