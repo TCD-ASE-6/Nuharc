@@ -17,6 +17,8 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
+// Radius from disaster location that needs to be avoided in routes (we add this to the coordinates, so ~200m)
+const DISASTER_RADIUS = 0.001;
 
 // safe zone 1
 const SAFE_LAT_1 = 53.33810241909542;
@@ -157,6 +159,7 @@ class Map3 extends Component {
    *
    */
   async setCurrentPostion() {
+    console.log("sset post")
     // Getting the current location
     const options = {
       enableHighAccuracy: true,
@@ -178,7 +181,18 @@ class Map3 extends Component {
           },
           "start_point"
         );
-        
+        let posInDisasterArea = false;
+        for (const incident of this.state.incidents.incidentList) {
+          let disasterLng = parseFloat(incident.longitude.$numberDecimal);
+          let disasterLat = parseFloat(incident.latitude.$numberDecimal);
+          let disasterLocation = new this.H.geo.Point(disasterLat, disasterLng);
+          let currentCoordinates =  new this.H.geo.Point( position.coords.latitude, position.coords.longitude);
+          if (disasterLocation.distance(currentCoordinates) < 200){
+            console.log("user in disaster area");
+            posInDisasterArea = true;
+            break;
+          }
+        }
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -234,27 +248,27 @@ class Map3 extends Component {
       lineWidth: 10,
     };
 
-    let zone = new this.H.map.Circle(
+    let zone1 = new this.H.map.Circle(
       { lat: SAFE_LAT_1, lng: SAFE_LNG_1 },
       200,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone);
-    let zone1 = new this.H.map.Circle(
+    zone1.id = "safe_zone";
+    this.state.map.addObject(zone1);
+    let zone2 = new this.H.map.Circle(
       { lat: SAFE_LAT_2, lng: SAFE_LNG_2 },
       130,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone1);
-    let zone2 = new this.H.map.Circle(
+    zone2.id = "safe_zone";
+    this.state.map.addObject(zone2);
+    let zone3 = new this.H.map.Circle(
       { lat: SAFE_LAT_3, lng: SAFE_LNG_3 },
       100,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone2);
+    zone3.id = "safe_zone";
+    this.state.map.addObject(zone3);
   }
 
   /**
@@ -390,10 +404,10 @@ class Map3 extends Component {
   async calculateRoute() {
     let disasterAreas = "";
     for (const incident of this.state.incidents.incidentList) {
-      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
-      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
-      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
-      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
+      let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+      let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+      let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+      let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
       disasterAreas +=
         "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
     }
@@ -456,10 +470,10 @@ class Map3 extends Component {
         incidentElement.appendChild(incidentDetailsElement);
         incidentElement.appendChild(innerElement);
         //create icon
-        var incidentIcon = new this.H.map.DomIcon(incidentElement);
+        let incidentIcon = new this.H.map.DomIcon(incidentElement);
 
         // create map marker
-        var incidentMarker = new this.H.map.DomMarker(
+        let incidentMarker = new this.H.map.DomMarker(
           { lat: section.position.lat, lng: section.position.lng },
           {
             icon: incidentIcon,
@@ -515,12 +529,12 @@ class Map3 extends Component {
     );
     this.state.map.addObject(incidentMarker);
 
-    var circleStyle = {
+    let circleStyle = {
       strokeColor: "red",
       fillColor: "rgba(0, 95, 255, 0.1)",
       lineWidth: 10,
     };
-    var circle = new this.H.map.Circle(
+    let circle = new this.H.map.Circle(
       { lat: incidentLat, lng: incidentLng },
       75,
       { style: circleStyle }
@@ -534,16 +548,19 @@ class Map3 extends Component {
    * set the marker on the map to show the current location
    */
   setPositionMarker(coords, id) {
-    let inDisasterArea = false;
     let currentM = new this.H.map.Marker({
       lat: coords.lat,
       lng: coords.lng,
     });
     currentM.id = id;
     if (id === "start_point") {
-      this.state.currentMarker = currentM;
+      this.setState({
+        currentMarker: currentM,
+      })
     } else {
-      this.state.destinationMarker = currentM;
+      this.setState({
+        destinationMarker: currentM,
+      })
     }
     this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
