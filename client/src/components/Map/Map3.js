@@ -197,7 +197,7 @@ class Map3 extends Component {
           }
         }
         if (posInDisasterArea) {
-          this.calculateNearestSafeZone();
+          this.calculateNearestSafeZone(-3, 3);
         }
       },
       function error(err) {
@@ -210,16 +210,18 @@ class Map3 extends Component {
   /**
    * This function calculates the nearest safe zone from current position
    */
-  calculateNearestSafeZone(){
-    let distanceList=[]
-    let counter=1
-    for (let currSafeZone in this.state.safeZones){
-      let distance = this.currentCoordinates.distance(currSafeZone.getPosition());
-      distanceList.push({count: counter, distance: distance})
-      counter=counter+1
+  calculateNearestSafeZone(currLat,currLng){
+    console.log("calculate nearest safezone");
+    let currentCoordinates =  new this.H.geo.Point(currLat, currLng);
+    let currMinimum = Number.MAX_VALUE;
+    let nearestSafeZone = null
+    for (let currSafeZone of this.state.safeZones){
+      if (currSafeZone.distance(currentCoordinates) < currMinimum){
+        nearestSafeZone = currSafeZone;
+      }
     }
-    
-    console.log(distanceList);
+    //this.calculateRoute
+    console.log(nearestSafeZone);
   }
 
 
