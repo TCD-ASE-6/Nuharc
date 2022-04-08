@@ -18,10 +18,15 @@ const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
 
+// safe zone 1
 const SAFE_LAT_1 = 53.33810241909542;
 const SAFE_LNG_1 = -6.2587451872999305;
+
+// safe zone 2
 const SAFE_LAT_2 = 53.33971103377993;
 const SAFE_LNG_2 = -6.249285026362085;
+
+// safe zone 3
 const SAFE_LAT_3 = 53.35674586966649;
 const SAFE_LNG_3 = -6.257488946686209;
 
@@ -183,6 +188,19 @@ class Map3 extends Component {
   }
 
   /**
+   * This function calculates the nearest safe zone from current position
+   */
+  calculateNearestSafeZone(){
+
+    const distance_marker = new this.H.map.Marker({ lat: this.position.coords.latitude, lng: this.position.coords.latitude });
+    const safe_zone = new this.H.map.Marker({ lat: SAFE_LAT_1, lng: SAFE_LNG_1 });
+    const distance = distance_marker.getPosition().distance(safe_zone.getPosition());
+    console.log(distance);
+
+  }
+
+
+  /**
    * This function sets the map state so its zoomed to the calculated route with both markers
    */
   zoomToMarkers() {
@@ -240,7 +258,7 @@ class Map3 extends Component {
   }
 
   /**
-   * hide the safe areas on the map
+   * this function hides the safe areas on the map
    *
    */
   hideSafeZones() {
@@ -553,7 +571,7 @@ class Map3 extends Component {
             <button onClick={() => {this.calculateOriginalRoute();this.calculateRoute();}}>
               Calculate Route
             </button>
-            <button onClick={() => this.setCurrentPostion()}>
+            <button onClick={() => {this.setCurrentPostion();this.calculateNearestSafeZone();}}>
               Find Current Location
             </button>
           </div>
