@@ -8,7 +8,6 @@ import { Provider } from "react-redux";
 import store from "./store";
 import NavBar from "./components/NavBar/NavBar";
 import LoginPage from "./components/LoginPage/LoginPage";
-import SignUp from "./components/RegisterPage/SignUp";
 import Map3 from "./components/Map/Map3";
 import Map2 from "./components/Map/Map2";
 import ReportIncident from "./components/ReportIncident/ReportIncident";
@@ -17,6 +16,7 @@ import UpdateIncident from "./components/UpdateIncident/UpdateIncident";
 import AdminNavigator from "./components/UpdateIncident/AdminNavigator";
 import { CookiesProvider } from "react-cookie";
 import Logout from "./components/LoginPage/Logout";
+import RegisterService from "./components/RegisterPage/RegisterService";
 
 function App() {
   return (
@@ -33,6 +33,7 @@ function App() {
             <Route path="/logout" element={<Logout />} />
             <Route path="/report" element={<ReportIncident />} />
             <Route path="/update-incident" element={<UpdateIncident />} />
+            <Route path="/register-service" element={<RegisterService />} />
             <Route path="/admin-navigator" element={<AdminNavigator />} />
           </Routes>
         </Router>
