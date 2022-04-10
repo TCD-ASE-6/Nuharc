@@ -1,9 +1,18 @@
 import React from "react";
 import axios from "axios";
 import "./MapStyle.css";
-import { Button, ListGroup, ListGroupItem } from "reactstrap";
+import {
+  Button,
+  ListGroup,
+  ListGroupItem,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "reactstrap";
 import { Component } from "react";
 import AutoComplete from "../AutoComplete/AutoComplete";
+import Role from "../../helpers/role";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -59,14 +68,24 @@ class Map3 extends Component {
       currentMarker: null,
       destinationMarker: null,
       safeZones: [safe_zone_1,safe_zone_2,safe_zone_3],
+      role: null,
+      modal: false,
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
     this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
     this.onSafeZoneRoutingResult = this.onSafeZoneRoutingResult.bind(this);
     this.setDestinationCoordinates = this.setDestinationCoordinates.bind(this);
+    this.togglePopup = this.togglePopup.bind(this);
     this.setCurrentPostion();
     this.setIncidents();
+  }
+
+  // for popup
+  togglePopup() {
+    this.setState({
+      modal: !this.state.modal,
+    });
   }
 
   /**
@@ -121,6 +140,7 @@ class Map3 extends Component {
         },
         isFixedRoute: true,
         incidentAtDestination: this.props.incident,
+        role: this.props.role,
       });
     }
   }
@@ -143,20 +163,25 @@ class Map3 extends Component {
   }
 
   async setResolved() {
-    let incidentAtDestination = this.state.incidentAtDestination;
-    incidentAtDestination.active = false;
-    const requestOptions = {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(incidentAtDestination),
-    };
-    const baseUrl = process.env.REACT_APP_BASE_URL;
-    const response = await fetch(
-      `${baseUrl}/api/incident/${incidentAtDestination._id}`,
-      requestOptions
-    ).then((response) => {
-      console.log(response.json());
-    });
+    if (this.state.role === Role.EmergencyStaff) {
+      let incidentAtDestination = this.state.incidentAtDestination;
+      incidentAtDestination.active = false;
+      const requestOptions = {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(incidentAtDestination),
+      };
+      const baseUrl = process.env.REACT_APP_BASE_URL;
+      const response = await fetch(
+        `${baseUrl}/api/incident/${incidentAtDestination._id}`,
+        requestOptions
+      ).then((response) => {
+        console.log(response.json());
+      });
+    } else {
+      // if insuffienient permissions then make popup visible.
+      this.togglePopup();
+    }
   }
 
   /**
@@ -679,6 +704,16 @@ class Map3 extends Component {
   render() {
     return (
       <div>
+        {/* pop up modal
+            giving an error for now 
+        */}
+        {/* <Modal isOpen={this.state.modal} toggle={() => this.togglePopup}>
+          <ModalHeader toggle={() => this.togglePopup}>
+            Unable To Resolve Incident.
+          </ModalHeader>
+          <ModalBody>Permission Denied.</ModalBody>
+        </Modal> */}
+
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />

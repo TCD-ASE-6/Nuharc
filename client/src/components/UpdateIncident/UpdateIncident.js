@@ -10,12 +10,28 @@ import {
   ListGroupItem,
   ListGroupItemHeading,
   ListGroupItemText,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter
 } from "reactstrap";
+import { useCookies } from "react-cookie";
+import Role from "../../helpers/role";
 
 // require('dotenv').config();
 
 function UpdateIncident() {
   let [incidentList, setIncidentList] = useState([]);
+
+  // get all cookies
+  const [cookies, setCookie, removeCookie] = useCookies(["userDetails"]);
+  const [role, setRole] = useState(null);
+
+  // for popup
+  const [modal, setModal] = useState(false);
+  const togglePopup = () => setModal(!modal);
+
+  // router navigator
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +46,16 @@ function UpdateIncident() {
     console.log(incidentList);
   };
 
+  // get user role to resolve incident
+  const getRole = () => {
+    // get user details cookie.
+    const userDetails = cookies["userDetails"];
+    // get role.
+    if (userDetails != null) {
+      setRole(userDetails.user.role);
+    }
+  };
+
   const onsubmit = async (incident) => {
     console.log(incident.id);
     const latitude = incident.longitude.$numberDecimal;
@@ -38,68 +64,84 @@ function UpdateIncident() {
   };
 
   const setResolved = async (incident) => {
-    let incidentAtDestination = incident;
-    incidentAtDestination.active = false;
-    const requestOptions = {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(incidentAtDestination),
-    };
-    const baseUrl = process.env.REACT_APP_BASE_URL;
-    const response = await fetch(
-      `${baseUrl}/api/incident/${incidentAtDestination._id}`,
-      requestOptions
-    ).then((response) => {
-      getAllIncidents();
-    });
-    console.log(response);
+    // only emergency staff can resolve indidents.
+    if (role === Role.EmergencyStaff) {
+      let incidentAtDestination = incident;
+      incidentAtDestination.active = false;
+      const requestOptions = {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(incidentAtDestination),
+      };
+      const baseUrl = process.env.REACT_APP_BASE_URL;
+      const response = await fetch(
+        `${baseUrl}/api/incident/${incidentAtDestination._id}`,
+        requestOptions
+      ).then((response) => {
+        getAllIncidents();
+      });
+      console.log(response);
+    } else {
+      // if insuffienient permissions then make popup visible.
+      togglePopup();
+    }
   };
 
   return (
-    <Container>
-      <br />
-      <ListGroup>
-        {incidentList.map((incident, i) => (
-          <Row className="align-items-center">
-            <Col md="10">
-              <ListGroupItem key={i} color="secondary" >
-                <ListGroupItemHeading key={"head" + i}>
-                  {incident.incidentType}{" "}
-                </ListGroupItemHeading>
-                <ListGroupItemText>
-                  Longitude: {incident.longitude.$numberDecimal} Latitude:{" "}
-                  {incident.latitude.$numberDecimal}
-                </ListGroupItemText>
-                <ListGroupItemText>
-                  Date: {Date(incident.date)}
-                </ListGroupItemText>
-              </ListGroupItem>
-            </Col>
-            <Col>
-              <ListGroupItem color="secondary">
-                <Button
-                  color="primary"
-                  block
-                  onClick={() => onsubmit(incident)}
-                  type="submit"
-                >
-                  Set Active
-                </Button>
-                <br />
-                <Button
-                  color="success"
-                  block
-                  onClick={() => setResolved(incident)}
-                  type="submit"
-                >
-                  Set Resolved
-                </Button>
-              </ListGroupItem>
-            </Col>
-          </Row>
-        ))}
-      </ListGroup>
-    </Container>
+    <div>
+      <Container>
+        <br />
+        <ListGroup>
+          {incidentList.map((incident, i) => (
+            <Row className="align-items-center">
+              <Col md="10">
+                <ListGroupItem key={i} color="secondary">
+                  <ListGroupItemHeading key={"head" + i}>
+                    {incident.incidentType}{" "}
+                  </ListGroupItemHeading>
+                  <ListGroupItemText>
+                    Longitude: {incident.longitude.$numberDecimal} Latitude:{" "}
+                    {incident.latitude.$numberDecimal}
+                  </ListGroupItemText>
+                  <ListGroupItemText>
+                    Date: {Date(incident.date)}
+                  </ListGroupItemText>
+                </ListGroupItem>
+              </Col>
+              <Col>
+                <ListGroupItem color="secondary">
+                  <Button
+                    color="primary"
+                    block
+                    onClick={() => onsubmit(incident)}
+                    type="submit"
+                  >
+                    Set Active
+                  </Button>
+                  <br />
+                  <Button
+                    color="success"
+                    block
+                    onClick={() => setResolved(incident)}
+                    type="submit"
+                  >
+                    Set Resolved
+                  </Button>
+                </ListGroupItem>
+              </Col>
+            </Row>
+          ))}
+        </ListGroup>
+      </Container>
+
+      <Modal isOpen={modal} toggle={togglePopup}>
+        <ModalHeader toggle={togglePopup}>Unable To Resolve Incident.</ModalHeader>
+        <ModalBody>
+          Permission Denied.
+        </ModalBody>
+      </Modal>
+
+    </div>
   );
 }
 
