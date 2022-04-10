@@ -26,6 +26,20 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
+// Radius from disaster location that needs to be avoided in routes (we add this to the coordinates, so ~200m)
+const DISASTER_RADIUS = 0.001;
+
+// safe zone 1
+const SAFE_LAT_1 = 53.33810241909542;
+const SAFE_LNG_1 = -6.2587451872999305;
+
+// safe zone 2
+const SAFE_LAT_2 = 53.33971103377993;
+const SAFE_LNG_2 = -6.249285026362085;
+
+// safe zone 3
+const SAFE_LAT_3 = 53.35674586966649;
+const SAFE_LNG_3 = -6.257488946686209;
 
 class Map3 extends Component {
   mapRef = React.createRef();
@@ -39,6 +53,9 @@ class Map3 extends Component {
    */
   constructor(props) {
     super(props);
+    const safe_zone_1 = new this.H.geo.Point(SAFE_LAT_1,SAFE_LNG_1);
+    const safe_zone_2 = new this.H.geo.Point(SAFE_LAT_2,SAFE_LNG_2);
+    const safe_zone_3 = new this.H.geo.Point(SAFE_LAT_3,SAFE_LNG_3);
     this.state = {
       map: null,
       destinationCoordinates: {
@@ -50,12 +67,14 @@ class Map3 extends Component {
       router: null,
       currentMarker: null,
       destinationMarker: null,
+      safeZones: [safe_zone_1,safe_zone_2,safe_zone_3],
       role: null,
       modal: false,
     };
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
     this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
+    this.onSafeZoneRoutingResult = this.onSafeZoneRoutingResult.bind(this);
     this.setDestinationCoordinates = this.setDestinationCoordinates.bind(this);
     this.togglePopup = this.togglePopup.bind(this);
     this.setCurrentPostion();
@@ -92,7 +111,7 @@ class Map3 extends Component {
     // real time traffic information
     map.addLayer(defaultLayers.vector.normal.traffic);
     // real time traffic incidents
-    map.addLayer(defaultLayers.vector.normal.trafficincidents);
+    //map.addLayer(defaultLayers.vector.normal.trafficincidents);
 
     const behavior = new this.H.mapevents.Behavior(
       new this.H.mapevents.MapEvents(map)
@@ -191,6 +210,25 @@ class Map3 extends Component {
           },
           "start_point"
         );
+        let posInDisasterArea = false;
+        for (const incident of this.state.incidents.incidentList) {
+          let disasterLng = parseFloat(incident.longitude.$numberDecimal);
+          let disasterLat = parseFloat(incident.latitude.$numberDecimal);
+          let disasterLocation = new this.H.geo.Point(disasterLat, disasterLng);
+          let currentCoordinates =  new this.H.geo.Point( position.coords.latitude, position.coords.longitude);
+          if (disasterLocation.distance(currentCoordinates) < 200){
+            console.log("user in disaster area");
+            posInDisasterArea = true;
+            break;
+          }
+        }
+        if (posInDisasterArea) {
+          console.log(position.coords.latitude + " " + position.coords.longitude)
+          this.calculateNearestSafeZone(position.coords.latitude, position.coords.longitude);
+        }
+        else{
+          this.hideSafeZones()
+        }
       },
       function error(err) {
         console.warn(`ERROR(${err.code}): ${err.message}`);
@@ -199,6 +237,29 @@ class Map3 extends Component {
     );
   }
 
+  /**
+   * This function calculates the nearest safe zone from current position
+   * @currLat latitude of the user
+   * @currentLng longitue of the user
+   */
+  calculateNearestSafeZone(currLat,currLng){
+    console.log("calculate nearest safezone");
+    let currentCoordinates =  new this.H.geo.Point(currLat, currLng);
+    let currMinimum = Number.MAX_VALUE;
+    let nearestSafeZone = null
+    for (let currSafeZone of this.state.safeZones){
+      if (currSafeZone.distance(currentCoordinates) < currMinimum){
+        nearestSafeZone = currSafeZone;
+      }
+    }
+    this.calculateSafeZoneRoute(nearestSafeZone.lat,nearestSafeZone.lng)
+    this.createSafeZones()
+  }
+
+
+  /**
+   * This function sets the map state so its zoomed to the calculated route with both markers
+   */
   zoomToMarkers() {
     this.removeObjectFromMap("group");
     if (!(this.state.destinationMarker === null)) {
@@ -213,7 +274,6 @@ class Map3 extends Component {
       // this.state.map.addObject(this.state.currentMarker);
       // this.state.map.addObject(this.state.destinationMarker);
       this.state.map.addObject(group);
-
       this.state.map.getViewModel().setLookAtData({
         bounds: group.getBoundingBox(),
       });
@@ -225,37 +285,37 @@ class Map3 extends Component {
    *
    */
   createSafeZones() {
-    var circleStyle = {
+    let circleStyle = {
       strokeColor: "darkgreen",
       fillColor: "rgba(0, 188, 71, 0.4)",
       lineWidth: 10,
     };
 
-    var zone = new this.H.map.Circle(
-      { lat: 53.33810241909542, lng: -6.2587451872999305 },
+    let zone1 = new this.H.map.Circle(
+      { lat: SAFE_LAT_1, lng: SAFE_LNG_1 },
       200,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone);
-    var zone = new this.H.map.Circle(
-      { lat: 53.33971103377993, lng: -6.249285026362085 },
+    zone1.id = "safe_zone";
+    this.state.map.addObject(zone1);
+    let zone2 = new this.H.map.Circle(
+      { lat: SAFE_LAT_2, lng: SAFE_LNG_2 },
       130,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone);
-    var zone = new this.H.map.Circle(
-      { lat: 53.35674586966649, lng: -6.257488946686209 },
+    zone2.id = "safe_zone";
+    this.state.map.addObject(zone2);
+    let zone3 = new this.H.map.Circle(
+      { lat: SAFE_LAT_3, lng: SAFE_LNG_3 },
       100,
       { style: circleStyle }
     );
-    zone.id = "safe_zone";
-    this.state.map.addObject(zone);
+    zone3.id = "safe_zone";
+    this.state.map.addObject(zone3);
   }
 
   /**
-   * hide the safe areas on the map
+   * this function hides the safe areas on the map
    *
    */
   hideSafeZones() {
@@ -273,10 +333,15 @@ class Map3 extends Component {
    * @param {*} objectID ID of the Object that is removed from the map.
    */
   removeObjectFromMap(objectID) {
-    for (let object of this.state.map.getObjects()) {
-      if (object.id === objectID) {
-        this.state.map.removeObject(object);
+    //map might not be set
+    try{
+      for (let object of this.state.map.getObjects()) {
+        if (object.id === objectID) {
+          this.state.map.removeObject(object);
+        }
       }
+    } catch(error){
+      console.log("Error in remove map: " + error)
     }
   }
 
@@ -295,7 +360,9 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "blue", lineWidth: 3 },
+          style: { strokeColor: "blue", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
+          lineTailCap: 'arrow-tail',
+          lineHeadCap: 'arrow-head'},
         });
 
         // Create a marker for the start point:
@@ -319,11 +386,11 @@ class Map3 extends Component {
   }
 
   /**
-   * Callback which contains the routing result from the HERE API (original route)
-   * TODO: remove duplicate code
-   * @param {*} result answer from the server whıch contains the route
+   * Callback whıch contaıns the routıng result from the HERE API
+   *
+   * @param {*} result answer from the server whıch contaıns the route
    */
-  onOriginalRoutingResult(result) {
+   onOriginalRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -333,7 +400,7 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "grey", lineWidth: 3 },
+          style: { strokeColor: "grey", lineWidth: 5 },
         });
         this.removeObjectFromMap("orig_route_line");
         routeLine.id = "orig_route_line";
@@ -345,32 +412,82 @@ class Map3 extends Component {
   }
 
   /**
-   * This function calculates the route without disaster zones
+   * Callback whıch contaıns the routıng result from the HERE API
+   *
+   * @param {*} result answer from the server whıch contaıns the route
    */
-  async calculateOriginalRoute() {
-    let routingParameters = {
-      routingMode: ROUTING_MODE,
-      transportMode: TRANSPORT_MODE,
-      origin:
-        this.state.currentCoordinates.lat +
-        "," +
-        this.state.currentCoordinates.lng,
-      destination:
-        this.state.destinationCoordinates.lat +
-        "," +
-        this.state.destinationCoordinates.lng,
-      return: "polyline",
-    };
+   onSafeZoneRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
 
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "green", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
+          lineTailCap: 'arrow-tail',
+          lineHeadCap: 'arrow-head'},
+        });
+
+        // Create a marker for the start point:
+        let startMarker = new this.H.map.Marker(
+          section.departure.place.location
+        );
+
+        // Create a marker for the end point:
+        let endMarker = new this.H.map.Marker(section.arrival.place.location);
+
+        // Add the route polyline and the two markers to the map:
+        routeLine.id = "route_line";
+        startMarker.id = "start_point";
+        endMarker.id = "end_point";
+        this.removeObjectFromMap("route_line");
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine]);
+      });
+    }
+  }
+/**
+ * Calculate route to safe zone
+ * @param {*} destinationLat latitude of safe zone
+ * @param {*} destinationLng longitude of safe zone
+ */
+  async calculateSafeZoneRoute(destinationLat,destinationLng) {
+      let disasterAreas = "";
+      for (const incident of this.state.incidents.incidentList) {
+        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+        disasterAreas +=
+          "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+      }
+      let routingParameters  = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+        destinationLat +
+          "," +
+          destinationLng,
+        "avoid[areas]": disasterAreas,
+        return: "polyline",
+      };
     if (this.state.router) {
-      this.state.router.calculateRoute(
-        routingParameters,
-        this.onOriginalRoutingResult,
-        function (error) {
-          alert(error.message);
-        }
-      );
-    } else {
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onSafeZoneRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
+    else {
       console.log("Could not calculate route. Router is null");
     }
   }
@@ -380,46 +497,75 @@ class Map3 extends Component {
    * and displays the calculated route on the map.
    *
    */
-  async calculateRoute() {
-    let disasterAreas = "";
-    for (const incident of this.state.incidents.incidentList) {
-      let lng1 = parseFloat(incident.longitude.$numberDecimal) + 0.001;
-      let lat1 = parseFloat(incident.latitude.$numberDecimal) - 0.001;
-      let lng2 = parseFloat(incident.longitude.$numberDecimal) - 0.001;
-      let lat2 = parseFloat(incident.latitude.$numberDecimal) + 0.001;
-      disasterAreas +=
-        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+  async calculateRoute(mode) {
+    let routingParameters = {}
+    if (mode){
+      let disasterAreas = "";
+      for (const incident of this.state.incidents.incidentList) {
+        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+        disasterAreas +=
+          "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+      }
+      routingParameters = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+          this.state.destinationCoordinates.lat +
+          "," +
+          this.state.destinationCoordinates.lng,
+        "avoid[areas]": disasterAreas,
+        return: "polyline",
+      };
+    }
+    else{
+      routingParameters = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+          this.state.destinationCoordinates.lat +
+          "," +
+          this.state.destinationCoordinates.lng,
+        return: "polyline",
+      };
     }
 
-    let routingParameters = {
-      routingMode: ROUTING_MODE,
-      transportMode: TRANSPORT_MODE,
-      origin:
-        this.state.currentCoordinates.lat +
-        "," +
-        this.state.currentCoordinates.lng,
-      destination:
-        this.state.destinationCoordinates.lat +
-        "," +
-        this.state.destinationCoordinates.lng,
-      "avoid[areas]": disasterAreas,
-      //'avoid[features]':"controlledAccessHighway,tunnel",
-      return: "polyline",
-    };
-
     if (this.state.router) {
-      this.state.router.calculateRoute(
-        routingParameters,
-        this.onRoutingResult,
-        function (error) {
-          alert(error.message);
-        }
-      );
+      if (mode){
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
+      else{
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onOriginalRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
     } else {
       console.log("Could not calculate route. Router is null");
     }
   }
 
+  /**
+   * This function adds the markers of dublin bikes stations to the map. If you hover over the symbol, the
+   * current occupancy is displayed.
+   */
   addDublinBikeMarkerToMap() {
     let request = new XMLHttpRequest();
     request.addEventListener("load", (event) => {
@@ -446,10 +592,10 @@ class Map3 extends Component {
         incidentElement.appendChild(incidentDetailsElement);
         incidentElement.appendChild(innerElement);
         //create icon
-        var incidentIcon = new this.H.map.DomIcon(incidentElement);
+        let incidentIcon = new this.H.map.DomIcon(incidentElement);
 
         // create map marker
-        var incidentMarker = new this.H.map.DomMarker(
+        let incidentMarker = new this.H.map.DomMarker(
           { lat: section.position.lat, lng: section.position.lng },
           {
             icon: incidentIcon,
@@ -505,12 +651,12 @@ class Map3 extends Component {
     );
     this.state.map.addObject(incidentMarker);
 
-    var circleStyle = {
+    let circleStyle = {
       strokeColor: "red",
       fillColor: "rgba(0, 95, 255, 0.1)",
       lineWidth: 10,
     };
-    var circle = new this.H.map.Circle(
+    let circle = new this.H.map.Circle(
       { lat: incidentLat, lng: incidentLng },
       75,
       { style: circleStyle }
@@ -524,15 +670,19 @@ class Map3 extends Component {
    * set the marker on the map to show the current location
    */
   setPositionMarker(coords, id) {
-    var currentM = new this.H.map.Marker({
+    let currentM = new this.H.map.Marker({
       lat: coords.lat,
       lng: coords.lng,
     });
     currentM.id = id;
     if (id === "start_point") {
-      this.state.currentMarker = currentM;
+      this.setState({
+        currentMarker: currentM,
+      })
     } else {
-      this.state.destinationMarker = currentM;
+      this.setState({
+        destinationMarker: currentM,
+      })
     }
     this.removeObjectFromMap(id);
     this.state.map.addObject(currentM);
@@ -567,10 +717,10 @@ class Map3 extends Component {
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />
-            <button onClick={() => this.calculateRoute()}>
+            <button onClick={() => {this.calculateRoute(false);this.calculateRoute(true);}}>
               Calculate Route
             </button>
-            <button onClick={() => this.setCurrentPostion()}>
+            <button onClick={() => {this.setCurrentPostion();}}>
               Find Current Location
             </button>
           </div>

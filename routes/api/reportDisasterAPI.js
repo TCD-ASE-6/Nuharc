@@ -64,7 +64,7 @@ router.post("/report", (req, res) => {
       }
     }
   );
-  res.redirect("/");
+  //res.redirect("/");
 });
 
 // @route PUT api/incident/:id
