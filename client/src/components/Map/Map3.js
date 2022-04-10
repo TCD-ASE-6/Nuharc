@@ -63,6 +63,7 @@ class Map3 extends Component {
     //bind callbacks
     this.onRoutingResult = this.onRoutingResult.bind(this);
     this.onOriginalRoutingResult = this.onOriginalRoutingResult.bind(this);
+    this.onSafeZoneRoutingResult = this.onSafeZoneRoutingResult.bind(this);
     this.setDestinationCoordinates = this.setDestinationCoordinates.bind(this);
     this.setCurrentPostion();
     this.setIncidents();
@@ -197,7 +198,11 @@ class Map3 extends Component {
           }
         }
         if (posInDisasterArea) {
-          this.calculateNearestSafeZone(-3, 3);
+          console.log(position.coords.latitude + " " + position.coords.longitude)
+          this.calculateNearestSafeZone(position.coords.latitude, position.coords.longitude);
+        }
+        else{
+          this.hideSafeZones()
         }
       },
       function error(err) {
@@ -209,6 +214,8 @@ class Map3 extends Component {
 
   /**
    * This function calculates the nearest safe zone from current position
+   * @currLat latitude of the user
+   * @currentLng longitue of the user
    */
   calculateNearestSafeZone(currLat,currLng){
     console.log("calculate nearest safezone");
@@ -220,8 +227,8 @@ class Map3 extends Component {
         nearestSafeZone = currSafeZone;
       }
     }
-    //this.calculateRoute
-    console.log(nearestSafeZone);
+    this.calculateSafeZoneRoute(nearestSafeZone.lat,nearestSafeZone.lng)
+    this.createSafeZones()
   }
 
 
@@ -379,29 +386,83 @@ class Map3 extends Component {
     }
   }
 
-  async calculateOriginalRoute() {
-    let routingParameters = {
-      routingMode: ROUTING_MODE,
-      transportMode: TRANSPORT_MODE,
-      origin:
-        this.state.currentCoordinates.lat +
-        "," +
-        this.state.currentCoordinates.lng,
-      destination:
-        this.state.destinationCoordinates.lat +
-        "," +
-        this.state.destinationCoordinates.lng,
-      return: "polyline",
-    };
+  /**
+   * Callback whıch contaıns the routıng result from the HERE API
+   *
+   * @param {*} result answer from the server whıch contaıns the route
+   */
+   onSafeZoneRoutingResult(result) {
+    if (result.routes.length) {
+      result.routes[0].sections.forEach((section) => {
+        // Create a linestring to use as a point source for the route line
+        let linestring = this.H.geo.LineString.fromFlexiblePolyline(
+          section.polyline
+        );
 
-    if (this.state.router) {
-      this.state.router.calculateRoute(
-        routingParameters,
-        this.onOriginalRoutingResult,
-        function (error) {
-          console.log(error.message);
+        // Create a polyline to display the route:
+        let routeLine = new this.H.map.Polyline(linestring, {
+          style: { strokeColor: "green", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
+          lineTailCap: 'arrow-tail',
+          lineHeadCap: 'arrow-head'},
         });
-    } else {
+
+        // Create a marker for the start point:
+        let startMarker = new this.H.map.Marker(
+          section.departure.place.location
+        );
+
+        // Create a marker for the end point:
+        let endMarker = new this.H.map.Marker(section.arrival.place.location);
+
+        // Add the route polyline and the two markers to the map:
+        routeLine.id = "route_line";
+        startMarker.id = "start_point";
+        endMarker.id = "end_point";
+        this.removeObjectFromMap("route_line");
+
+        // Add the route polyline and the two markers to the map:
+        this.state.map.addObjects([routeLine]);
+      });
+    }
+  }
+/**
+ * Calculate route to safe zone
+ * @param {*} destinationLat latitude of safe zone
+ * @param {*} destinationLng longitude of safe zone
+ */
+  async calculateSafeZoneRoute(destinationLat,destinationLng) {
+      let disasterAreas = "";
+      for (const incident of this.state.incidents.incidentList) {
+        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+        disasterAreas +=
+          "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+      }
+      let routingParameters  = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+        destinationLat +
+          "," +
+          destinationLng,
+        "avoid[areas]": disasterAreas,
+        return: "polyline",
+      };
+    if (this.state.router) {
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onSafeZoneRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
+    else {
       console.log("Could not calculate route. Router is null");
     }
   }
@@ -411,40 +472,66 @@ class Map3 extends Component {
    * and displays the calculated route on the map.
    *
    */
-  async calculateRoute() {
-    let disasterAreas = "";
-    for (const incident of this.state.incidents.incidentList) {
-      let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
-      let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
-      let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
-      let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
-      disasterAreas +=
-        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+  async calculateRoute(mode) {
+    let routingParameters = {}
+    if (mode){
+      let disasterAreas = "";
+      for (const incident of this.state.incidents.incidentList) {
+        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+        disasterAreas +=
+          "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+      }
+      routingParameters = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+          this.state.destinationCoordinates.lat +
+          "," +
+          this.state.destinationCoordinates.lng,
+        "avoid[areas]": disasterAreas,
+        return: "polyline",
+      };
+    }
+    else{
+      routingParameters = {
+        routingMode: ROUTING_MODE,
+        transportMode: TRANSPORT_MODE,
+        origin:
+          this.state.currentCoordinates.lat +
+          "," +
+          this.state.currentCoordinates.lng,
+        destination:
+          this.state.destinationCoordinates.lat +
+          "," +
+          this.state.destinationCoordinates.lng,
+        return: "polyline",
+      };
     }
 
-    let routingParameters = {
-      routingMode: ROUTING_MODE,
-      transportMode: TRANSPORT_MODE,
-      origin:
-        this.state.currentCoordinates.lat +
-        "," +
-        this.state.currentCoordinates.lng,
-      destination:
-        this.state.destinationCoordinates.lat +
-        "," +
-        this.state.destinationCoordinates.lng,
-      "avoid[areas]": disasterAreas,
-      //'avoid[features]':"controlledAccessHighway,tunnel",
-      return: "polyline",
-    };
-
     if (this.state.router) {
-      this.state.router.calculateRoute(
-        routingParameters,
-        this.onRoutingResult,
-        function (error) {
-          console.log(error.message);
-        });
+      if (mode){
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
+      else{
+        this.state.router.calculateRoute(
+          routingParameters,
+          this.onOriginalRoutingResult,
+          function (error) {
+            console.log(error.message);
+          });
+      }
     } else {
       console.log("Could not calculate route. Router is null");
     }
@@ -595,7 +682,7 @@ class Map3 extends Component {
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />
-            <button onClick={() => {this.calculateOriginalRoute();this.calculateRoute();}}>
+            <button onClick={() => {this.calculateRoute(false);this.calculateRoute(true);}}>
               Calculate Route
             </button>
             <button onClick={() => {this.setCurrentPostion();}}>
