@@ -10,7 +10,8 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "prod": "concurrently \"npm run start\" \"npm run client\"",
     "health-checks-test": "mocha loadBalancers/health-checks/health-checks.spec.js",
-    "disaster-route-service-checks-test": "mocha src/services/disaster-route.service.spec.js"
+    "disaster-route-service-checks-test": "mocha src/services/disaster-route.service.spec.js",
+    "build": "npm run build --prefix client"
   },
   "proxy": "http://localhost:8080",
   "eslintConfig": {
