@@ -1,6 +1,6 @@
 import React from "react";
 import GoogleMapReact from "google-map-react";
-import { fitBounds } from "google-map-react";
+import API_URL from "../../environment";
 import Marker from "./Marker";
 import axios from "axios";
 import IncidentMarker from "./IncidentMarker";
@@ -8,11 +8,11 @@ import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from "react-places-autocomplete";
+
 // import DisasterRouteService from "../../services/disaster-route.service";
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
 const DEFAULT_ZOOM = 15;
-import API_URL from "../../environment";
 /* global google */
 
 class Map2 extends React.Component {
