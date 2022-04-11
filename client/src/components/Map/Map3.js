@@ -26,8 +26,10 @@ const INITIAL_ZOOM = 13;
 const TRANSPORT_MODE = "pedestrian";
 // Routing mode for the HERE map API
 const ROUTING_MODE = "fast";
-// Radius from disaster location that needs to be avoided in routes (we add this to the coordinates, so ~200m)
+// Radius from disaster location that needs to be avoided in routes (we add this to the coordinates, so ~150m)
 const DISASTER_RADIUS = 0.001;
+// Disaster radius in meter
+const DISASTER_RADIUS_METER = 150;
 
 // safe zone 1
 const SAFE_LAT_1 = 53.33810241909542;
@@ -216,7 +218,7 @@ class Map3 extends Component {
           let disasterLat = parseFloat(incident.latitude.$numberDecimal);
           let disasterLocation = new this.H.geo.Point(disasterLat, disasterLng);
           let currentCoordinates =  new this.H.geo.Point( position.coords.latitude, position.coords.longitude);
-          if (disasterLocation.distance(currentCoordinates) < 200){
+          if (disasterLocation.distance(currentCoordinates) < DISASTER_RADIUS_METER){
             console.log("user in disaster area");
             posInDisasterArea = true;
             break;
@@ -248,7 +250,9 @@ class Map3 extends Component {
     let currMinimum = Number.MAX_VALUE;
     let nearestSafeZone = null
     for (let currSafeZone of this.state.safeZones){
-      if (currSafeZone.distance(currentCoordinates) < currMinimum){
+      let currDistance = currSafeZone.distance(currentCoordinates)
+      if (currDistance < currMinimum){
+        currMinimum = currDistance
         nearestSafeZone = currSafeZone;
       }
     }
