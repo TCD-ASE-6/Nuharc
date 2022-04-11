@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import AutoComplete from "../AutoComplete/AutoComplete";
 import {
   Globalstyle,
-  StyleForm,
   StyleFormedWrapper,
   StyledButton,
   RadioButton,
@@ -242,23 +241,26 @@ function ReportIncident(props) {
   return (
     <>
       <Globalstyle />
-      <StyleFormedWrapper>
-        <StyleForm>
+      <StyleFormedWrapper style={{display: "block"}}>
+        <div>
           <StyledButton onClick={() => setCurrentPostion()}>
             Current Location
           </StyledButton>
-          <br></br>
-          <AutoComplete updateLocation={setIncidentLocation} />
+          </div>
           <div>
-            <h2>Report an Incident</h2>
+          <AutoComplete updateLocation={setIncidentLocation} />
+          </div>
+          <div>
+            <h4>Report an Incident</h4>
           </div>
           <div ref={mapRef} style={{ height: "50vh" }}></div>
           <div onChange={onChangeValue}></div>
-          <hr></hr>
+          <br></br>
+          <h6>Choose Disaster Type - </h6>
           <Item>
             <RadioButton type="radio" value="Fire" name="incident" />{" "}
             <RadioButtonLabel />
-            <div>Choose Pickup</div>
+            <div>Fire</div>
           </Item>
           <Item>
             <RadioButton type="radio" value="Explosion" name="incident" />{" "}
@@ -273,7 +275,6 @@ function ReportIncident(props) {
           <StyledButton onClick={onsubmit} type="submit">
             Submit
           </StyledButton>
-        </StyleForm>
       </StyleFormedWrapper>
     </>
   );
