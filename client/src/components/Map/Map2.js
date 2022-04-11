@@ -1,6 +1,6 @@
 import React from "react";
 import GoogleMapReact from "google-map-react";
-import { fitBounds } from 'google-map-react';
+import { fitBounds } from "google-map-react";
 import Marker from "./Marker";
 import axios from "axios";
 import IncidentMarker from "./IncidentMarker";
@@ -8,10 +8,10 @@ import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from "react-places-autocomplete";
-import DisasterRouteService from "../../services/disaster-route.service";
+// import DisasterRouteService from "../../services/disaster-route.service";
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
-const DEFAULT_ZOOM = 15
+const DEFAULT_ZOOM = 15;
 /* global google */
 
 class Map2 extends React.Component {
@@ -21,9 +21,9 @@ class Map2 extends React.Component {
 
   getPolyLineFromRoute(route) {
     let path = [];
-    if(route) {
+    if (route) {
       path = route.map((coordinate, idx) => {
-       return {
+        return {
           lat: coordinate[0],
           lng: coordinate[1],
         };
@@ -37,13 +37,13 @@ class Map2 extends React.Component {
     const currentCoordinates = {
       lat: 53.36460864423722,
       lng: -6.256456570972608,
-    }
+    };
     this.state = {
       currentCoordinates,
       incidents: { incidentList: [] },
       address: "",
       center: currentCoordinates,
-      zoom: DEFAULT_ZOOM
+      zoom: DEFAULT_ZOOM,
     };
     this.setCurrentPostion();
     this.setIncidents();
@@ -55,7 +55,7 @@ class Map2 extends React.Component {
     this.setState({ address: value });
     this.setState({ destinationCoordinates: latLng });
     this.setState({ currentRoute: null });
-    this.reConfigureZoom()
+    this.reConfigureZoom();
     this.resetPolyLine();
   }
 
@@ -64,11 +64,11 @@ class Map2 extends React.Component {
    */
 
   reConfigureZoom() {
-    if(this.state.destinationCoordinates) {
-      const map = this.state.map
+    if (this.state.destinationCoordinates) {
+      const map = this.state.map;
       const bounds = new window.google.maps.LatLngBounds();
-      bounds.extend(this.state.currentCoordinates)
-      bounds.extend(this.state.destinationCoordinates)
+      bounds.extend(this.state.currentCoordinates);
+      bounds.extend(this.state.destinationCoordinates);
       map.fitBounds(bounds);
     }
   }
@@ -78,9 +78,9 @@ class Map2 extends React.Component {
    */
   resetPolyLine() {
     const currentPolyLine = this.state.polyline;
-    if(currentPolyLine){
+    if (currentPolyLine) {
       currentPolyLine.setMap(null);
-      this.setState({polyline: null})
+      this.setState({ polyline: null });
     }
   }
 
@@ -94,16 +94,16 @@ class Map2 extends React.Component {
       strokeWeight: 4,
     });
     polyline.setMap(this.state.map);
-    this.setState({polyline});
+    this.setState({ polyline });
   }
 
   async getRoutes(from, to) {
-    const routeService = new DisasterRouteService();
-    // TODO Move this updwards and access incident list from the service only
-    await routeService.configureIncidentList();
-    const currentRoute = await routeService.getRoute(from, to)
-    this.setState({ currentRoute: currentRoute });
-    this.setPolyline();
+    // const routeService = new DisasterRouteService();
+    // // TODO Move this updwards and access incident list from the service only
+    // await routeService.configureIncidentList();
+    // const currentRoute = await routeService.getRoute(from, to)
+    // this.setState({ currentRoute: currentRoute });
+    // this.setPolyline();
   }
 
   async setIncidents() {
@@ -120,14 +120,14 @@ class Map2 extends React.Component {
     };
     navigator.geolocation.watchPosition(
       (position) => {
-        const lat = position.coords.latitude
-        const lng = position.coords.longitude
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
         this.setState({
           currentCoordinates: {
             lat,
-            lng
+            lng,
           },
-          center: {lat,lng}
+          center: { lat, lng },
         });
       },
       function error(err) {
@@ -142,7 +142,7 @@ class Map2 extends React.Component {
   }
 
   setAddress(address) {
-    this.setState({address})
+    this.setState({ address });
   }
 
   render() {
