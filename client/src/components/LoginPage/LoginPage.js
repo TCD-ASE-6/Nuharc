@@ -1,35 +1,60 @@
-import React, { Component } from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import { Button, Form, FormGroup, Label, Input } from "reactstrap";
-import { loginUser } from "../../actions/userActions";
-import { connect } from "react-redux";
+import { useCookies } from "react-cookie";
+import { useNavigate } from "react-router-dom";
 
-class LoginPage extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      email: "",
-      password: "",
-    };
-    this.loginUser = this.loginUser.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-  }
+function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [hasLoggedIn, setHasLoggedIn] = useState(false);
+  const [didLoginFail, setDidLoginFail] = useState(false);
 
-  loginUser = (event) => {
-    event.preventDefault();
+  // this hook deals with setting a global cookie for user details
+  // contains all information about logged in user like jwt token, email, role, etc.
+  const [cookies, setCookie] = useCookies(["userDetails"]);
+
+  const navigate = useNavigate();
+
+  // create a user object and pass it to the login and store user cookie function
+  const loginUser = (e) => {
+    e.preventDefault();
     const user = {
-      email: this.state.email,
-      password: this.state.password
-    }
-    this.props.loginUser(user);
+      email: email,
+      password: password,
+    };
+    loginUserAndStoreInCookie(user);
   };
 
-  handleChange = (e) => {
-    console.log(e.target.value);
-    this.setState({ [e.target.name]: e.target.value });
+  // function to login user and store the cookie.
+  const loginUserAndStoreInCookie = async (user) => {
+    axios
+      .post(`/api/users/login`, user)
+      .then((response) => {
+        // const userDetails = response.json();
+        // store global user details in a cookie
+        setCookie("userDetails", JSON.stringify(response.data), { path: "/" });
+        setHasLoggedIn(true);
+        setDidLoginFail(false);
+        setTimeout(() => {
+          navigate("/");
+        }, 2000);
+      })
+      .catch((err) => {
+        setDidLoginFail(true);
+      });
   };
 
-  render() {
-    return (
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+  };
+
+  return (
+    <>
       <Form>
         <FormGroup>
           <Label for="userEMail">Email</Label>
@@ -37,7 +62,7 @@ class LoginPage extends Component {
             type="email"
             name="email"
             id="userEMail"
-            onChange={this.handleChange}
+            onChange={(e) => handleEmailChange(e)}
             placeholder="Enter your Email"
           />
         </FormGroup>
@@ -47,18 +72,25 @@ class LoginPage extends Component {
             type="password"
             name="password"
             id="userPassword"
-            onChange={this.handleChange}
+            onChange={(e) => handlePasswordChange(e)}
             placeholder="Enter your password"
           />
         </FormGroup>
-        <Button onClick={this.loginUser}>Login</Button>
+        <Button onClick={(e) => loginUser(e)}>Login</Button>
       </Form>
-    );
-  }
+
+      {hasLoggedIn && (
+        <h4 style={{ color: "green", textAlign: "center" }}>
+          Login Successful.
+        </h4>
+      )}
+      {didLoginFail && (
+        <h4 style={{ color: "red", textAlign: "center" }}>
+          Login Failed.
+        </h4>
+      )}
+    </>
+  );
 }
 
-const mapStateToProps = (state) => ({
-  user: state.user,
-});
-
-export default connect(mapStateToProps, { loginUser })(LoginPage);
+export default LoginPage;

@@ -1,5 +1,7 @@
-describe("Calculate route", () => {
-    it("Calculate route", async () => {
+
+describe("Calculate Route Functionality", () => {
+    it("get route", async () => {
+
         cy.visit('/');
         cy.findByPlaceholderText("Enter Location").type('Dublin');
         cy.wait(500);
