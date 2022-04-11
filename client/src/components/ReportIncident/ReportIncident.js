@@ -4,6 +4,7 @@ import "../../App.css";
 import { Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import AutoComplete from "../AutoComplete/AutoComplete";
+import API_URL from "../../environment";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -216,7 +217,7 @@ function ReportIncident(props) {
 
     console.log(data);
 
-    axios.post("/api/incident/report", data).then((res) => {
+    axios.post(`${API_URL}/api/incident/report`, data).then((res) => {
       // update incidentList in redux store after incident was added
       // Below Call Not needed.
       // updateIncidentList();

@@ -12,6 +12,7 @@ import PlacesAutocomplete, {
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
 const DEFAULT_ZOOM = 15;
+import API_URL from "../../environment";
 /* global google */
 
 class Map2 extends React.Component {
@@ -107,7 +108,7 @@ class Map2 extends React.Component {
   }
 
   async setIncidents() {
-    const incidents = await axios.get("/api/incident/");
+    const incidents = await axios.get(`${API_URL}/api/incident/`);
     this.setState({ incidents: { incidentList: incidents.data } });
   }
 
