@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../../App.css";
-import { Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import AutoComplete from "../AutoComplete/AutoComplete";
-import styled, { createGlobalStyle, css } from 'styled-components';
+import {
+  Globalstyle,
+  StyleForm,
+  StyleFormedWrapper,
+  StyledButton,
+  RadioButton,
+  Item,
+  RadioButtonLabel,
+} from "../styled-component/FormStyle";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -17,136 +24,13 @@ const INITIAL_ZOOM = 13;
 // Element Id of the destination span
 const DESTINATION_SPAN_ID = "destinationSpanId";
 
-const Globalstyle = createGlobalStyle`
-html {
-  height: 100%;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  background: linear-gradient(to bottom, #49c49d, #e1eec3);
-  height: 100%;
-  margin: 0;
-  color: #555;
-}
-`;
-
-const SharedStyle = css`
-  background-color: #eee;
-  height: 40px;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-  margin: 10px 0 20px 0;
-  padding: 20px;
-  box-sizing: border-box;
-`;
-
-const StyleFormedWrapper = styled.div`
-display: flex;
-justify-content: center;
-align-items: center;
-height: 100vh;
-padding: 0 20px;
-`;
-
-const StyleForm = styled.form`
-  width: 100%;
-  max-width: 700px;
-  padding: 40px;
-  background-color: #fff;
-  border-radius: 10px;
-  box-sizing: border-box;
-  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.2);
-`;
-
-const StyledInput = styled.input`
-display: block;
-width: 100%;
-${SharedStyle}
-`;
-
-const StyledButton = styled.button`
-display: block;
-background-color: #f7797d;
-color: #fff;
-font-size: .9rem;
-border: 0;
-border-radius: 5px;
-height: 40px;
-padding: 0 20px;
-cursor: pointer;
-box-sizing: border-box;
-:hover {
-  background-color: red;
-}
-`;
-
-const Item = styled.div`
-  display: flex;
-  align-items: center;
-  height: 48px;
-  position: relative;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-  border-radius: 2px;
-  margin-bottom: 10px;
-`;
-
-const RadioButtonLabel = styled.label`
-  position: absolute;
-  top: 25%;
-  left: 4px;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: white;
-  border: 1px solid #ccc;
-`;
-const RadioButton = styled.input`
-  opacity: 0;
-  z-index: 1;
-  cursor: pointer;
-  width: 25px;
-  height: 25px;
-  margin-right: 10px;
-  &:hover ~ ${RadioButtonLabel} {
-    background: #ccc;
-    &::after {
-      content: fill;
-      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-      display: block;
-      color: white;
-      width: 12px;
-      height: 12px;
-      margin: 4px;
-    }
-  }
-  &:checked + ${Item} {
-    background: yellowgreen;
-    border: 2px solid yellowgreen;
-  }
-  &:checked + ${RadioButtonLabel} {
-    background: yellowgreen;
-    border: 1px solid yellowgreen;
-    &::after {
-      content: fill;
-      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-      display: block;
-      color: white;
-      width: 12px;
-      height: 12px;
-      margin: 4px;
-    }
-  }
-`;
-
 function ReportIncident(props) {
   let mapRef = React.createRef();
   let autocompleteRequest = new XMLHttpRequest();
-  
+
   //HERE maps instance
   let H = window.H;
-  
+
   // Set State Hooks
   let map;
   const [incidentCoordinates, setIncidentCoordinates] = useState(null);
@@ -157,7 +41,7 @@ function ReportIncident(props) {
   const [incidentAtDestination, setIncidentAtDestination] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [isFixedRoute, setIsFixedRoute] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const getPlaceFromCoordinates = (coords) => {
@@ -356,57 +240,42 @@ function ReportIncident(props) {
    *
    */
   return (
-    // <div>
-    //   {/* {this.updateCurrentLocation()} */}
-    //   <Button onClick={() => setCurrentPostion()}>Current Location</Button>
-    //   <AutoComplete updateLocation={setIncidentLocation} />
-    //   <p>Report an Incident</p>
-    //   <div ref={mapRef} style={{ height: "50vh" }}></div>
-    //   <div onChange={onChangeValue}>
-    //     <div>
-    //       <input type="radio" value="Fire" name="incident" /> Fire
-    //     </div>
-    //     <div>
-    //       <input type="radio" value="Explosion" name="incident" /> Explosion
-    //     </div>
-    //     <div>
-    //       <input type="radio" value="CarAccident" name="incident" /> Car
-    //       Accident
-    //     </div>
-    //   </div>
-    //   <button onClick={onsubmit} type="submit">
-    //     Submit
-    //   </button>
-    // </div>
     <>
-            <Globalstyle />
-            <StyleFormedWrapper>
-            <StyleForm>
-                <StyledButton onClick={() => setCurrentPostion()}>Current Location</StyledButton>
-                <br></br>
-                    <AutoComplete updateLocation={setIncidentLocation} />
-            <div><h2>Report an Incident</h2></div>
-            <div ref={mapRef} style={{ height: "50vh" }}></div>
-                <div onChange={onChangeValue}></div>
-                <hr></hr>
-                    <Item>
-                <RadioButton type="radio" value="Fire" name="incident"/> <RadioButtonLabel />
-        <div>Choose Pickup</div>
-      </Item>
-      <Item>
-                <RadioButton type="radio" value="Explosion" name="incident"/> <RadioButtonLabel />
-        <div>Explosion</div>
-      </Item>
-      <Item>
-                <RadioButton type="radio" value="CarAccident" name="incident"/> <RadioButtonLabel />
-        <div>Car Accident</div>
-      </Item>
-            <StyledButton onClick={onsubmit} type="submit">
+      <Globalstyle />
+      <StyleFormedWrapper>
+        <StyleForm>
+          <StyledButton onClick={() => setCurrentPostion()}>
+            Current Location
+          </StyledButton>
+          <br></br>
+          <AutoComplete updateLocation={setIncidentLocation} />
+          <div>
+            <h2>Report an Incident</h2>
+          </div>
+          <div ref={mapRef} style={{ height: "50vh" }}></div>
+          <div onChange={onChangeValue}></div>
+          <hr></hr>
+          <Item>
+            <RadioButton type="radio" value="Fire" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Choose Pickup</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="Explosion" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Explosion</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Car Accident</div>
+          </Item>
+          <StyledButton onClick={onsubmit} type="submit">
             Submit
-            </StyledButton>
-            </StyleForm>
-            </StyleFormedWrapper>
-            </>
+          </StyledButton>
+        </StyleForm>
+      </StyleFormedWrapper>
+    </>
   );
 }
 
