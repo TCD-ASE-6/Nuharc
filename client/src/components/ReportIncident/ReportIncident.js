@@ -25,6 +25,7 @@ function ReportIncident(props) {
   
   // Set State Hooks
   let map;
+  const [tempMap, setTempMap] = useState(null);
   const [incidentCoordinates, setIncidentCoordinates] = useState(null);
   const [incidentType, setIncidentType] = useState("");
   const [active, setActive] = useState(true);
@@ -172,6 +173,13 @@ function ReportIncident(props) {
         lng: coords.lng,
       });
       console.log(map === null);
+      if (tempMap === null && (map !== null || map !== undefined)) {
+        setTempMap(map);
+      }
+
+      if (map === undefined || map === null) {
+        map = tempMap;
+      }
       currentM.id = "incidentLocation";
       removeObjectFromMap("incidentLocation");
       map.addObject(currentM);
