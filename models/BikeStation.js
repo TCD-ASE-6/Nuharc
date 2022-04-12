@@ -23,4 +23,4 @@ const BikeStationSchema = new Schema({
 });
 
 // convert into a model and export.
-module.exports = BikeStation = mongoose.model("users", BikeStationSchema);
+module.exports = BikeStation = mongoose.model("bikes", BikeStationSchema);

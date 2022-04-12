@@ -79,7 +79,7 @@ function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="userPassword">Email</label>
+            <label htmlFor="userPassword">Password</label>
             <StyledInput
               type="password"
               name="password"

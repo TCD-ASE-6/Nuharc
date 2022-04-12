@@ -616,9 +616,9 @@ class Map3 extends Component {
         };
 
         //cache data to backend server
-        axios.put(`${API_URL}/api/bikes/updateStation`,data).catch((err) =>
+        /*axios.post(`${API_URL}/api/bikes/updateStation`,data).catch((err) =>
         console.log(err.response.data)
-        );
+        );*/
         this.state.map.addObject(incidentMarker);
       });
     });
@@ -626,6 +626,7 @@ class Map3 extends Component {
       "GET",
       "https://api.jcdecaux.com/vls/v1/stations?contract=Dublin&apiKey=b1564a98f90c7d2182f10b93848a8e00fe7e7b89"
     );
+    //const bikeStations = await axios.get(`${API_URL}/api/bikes/`);
     request.setRequestHeader("Accept", " application/json");
 
     request.send();

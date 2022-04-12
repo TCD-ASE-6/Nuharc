@@ -104,6 +104,7 @@ app2.get("*", (req, res) => {
 // const port = process.env.PORT || 8080;
 
 const server = express().get("*", weightedRoundRobinHandler).post("*", weightedRoundRobinHandler)
+server.use(cors())
 
 const beforeShutdownCallback = () => {
   console.log("Shutdown in Progress")
