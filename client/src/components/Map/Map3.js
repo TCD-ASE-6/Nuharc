@@ -605,6 +605,17 @@ class Map3 extends Component {
             icon: incidentIcon,
           }
         );
+        const data = {
+          longitude: section.position.lng,
+          latitude: section.position.lat,
+          availableBikes: section.available_bikes,
+          name: section.name,
+        };
+
+        //cache data to backend server
+        axios.put("/api/bikes/updateStation",data).catch((err) =>
+        console.log(err.response.data)
+        );
         this.state.map.addObject(incidentMarker);
       });
     });
