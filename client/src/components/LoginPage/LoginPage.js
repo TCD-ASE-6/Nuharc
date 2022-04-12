@@ -1,8 +1,17 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { Button, Form, FormGroup, Label, Input } from "reactstrap";
 import { useCookies } from "react-cookie";
 import { useNavigate } from "react-router-dom";
+import {
+  Globalstyle,
+  StyleForm,
+  StyleFormedWrapper,
+  StyledButton,
+  StyledInput,
+} from "../styled-component/FormStyle";
+
+import API_URL from "../../environment";
+
 
 function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,7 +38,7 @@ function LoginPage() {
   // function to login user and store the cookie.
   const loginUserAndStoreInCookie = async (user) => {
     axios
-      .post(`/api/users/login`, user)
+      .post(`${API_URL}/api/users/login`, user)
       .then((response) => {
         // const userDetails = response.json();
         // store global user details in a cookie
@@ -55,40 +64,48 @@ function LoginPage() {
 
   return (
     <>
-      <Form>
-        <FormGroup>
-          <Label for="userEMail">Email</Label>
-          <Input
-            type="email"
-            name="email"
-            id="userEMail"
-            onChange={(e) => handleEmailChange(e)}
-            placeholder="Enter your Email"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userPassword">Password</Label>
-          <Input
-            type="password"
-            name="password"
-            id="userPassword"
-            onChange={(e) => handlePasswordChange(e)}
-            placeholder="Enter your password"
-          />
-        </FormGroup>
-        <Button onClick={(e) => loginUser(e)}>Login</Button>
-      </Form>
-
-      {hasLoggedIn && (
-        <h4 style={{ color: "green", textAlign: "center" }}>
-          Login Successful.
-        </h4>
-      )}
-      {didLoginFail && (
-        <h4 style={{ color: "red", textAlign: "center" }}>
-          Login Failed.
-        </h4>
-      )}
+      <Globalstyle />
+      <StyleFormedWrapper>
+        <StyleForm>
+          <div>
+            <label htmlFor="userEmail">Email</label>
+            <StyledInput
+              type="email"
+              name="email"
+              id="userEmail"
+              onChange={(e) => handleEmailChange(e)}
+              placeholder="Enter your Email"
+              value={email}
+            />
+          </div>
+          <div>
+            <label htmlFor="userPassword">Email</label>
+            <StyledInput
+              type="password"
+              name="password"
+              id="userPassword"
+              onChange={(e) => handlePasswordChange(e)}
+              placeholder="Enter your password"
+              value={password}
+            />
+          </div>
+          <div>
+            <StyledButton onClick={(e) => loginUser(e)}>Login</StyledButton>
+          </div>
+          <div>
+            {hasLoggedIn && (
+              <h4 style={{ color: "green", textAlign: "center" }}>
+                Login Successful.
+              </h4>
+            )}
+            {didLoginFail && (
+              <h4 style={{ color: "red", textAlign: "center" }}>
+                Login Failed.
+              </h4>
+            )}
+          </div>
+        </StyleForm>
+      </StyleFormedWrapper>
     </>
   );
 }

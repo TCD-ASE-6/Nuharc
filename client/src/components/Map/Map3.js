@@ -13,6 +13,7 @@ import {
 import { Component } from "react";
 import AutoComplete from "../AutoComplete/AutoComplete";
 import Role from "../../helpers/role";
+import API_URL from "../../environment";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -160,7 +161,9 @@ class Map3 extends Component {
    *
    */
   async setIncidents() {
-    const incidents = await axios.get("/api/incident/");
+    console.log(`In map 3... ${API_URL}`)
+    console.log(`process env.. ${process.env.NODE_ENV.trim()}` )
+    const incidents = await axios.get(`${API_URL}/api/incident/`);
     this.setState({ incidents: { incidentList: incidents.data } });
   }
 
@@ -175,7 +178,7 @@ class Map3 extends Component {
       };
       const baseUrl = process.env.REACT_APP_BASE_URL;
       const response = await fetch(
-        `${baseUrl}/api/incident/${incidentAtDestination._id}`,
+        `${API_URL}/api/incident/${incidentAtDestination._id}`,
         requestOptions
       ).then((response) => {
         console.log(response.json());

@@ -1,8 +1,14 @@
 import React, { useState } from "react";
-import { Button, Form, FormGroup, Label, Input, Container } from "reactstrap";
 import { signupUser } from "../../actions/userActions";
 import Role from "../../helpers/role";
 import { useNavigate } from "react-router-dom";
+import {
+  Globalstyle,
+  StyleForm,
+  StyleFormedWrapper,
+  StyledButton,
+  StyledInput,
+} from "../styled-component/FormStyle";
 
 export default function RegisterService() {
   const navigate = useNavigate();
@@ -44,65 +50,70 @@ export default function RegisterService() {
   };
 
   return (
-    <Container>
-      <Form onSubmit={submitHandler}>
-        <FormGroup>
-          <Label for="userName">Name</Label>
-          <Input
-            type="text"
+    <>
+      <Globalstyle />
+      <StyleFormedWrapper>
+        <StyleForm onSubmit={submitHandler}>
+          <div>
+            <label htmlFor="userName">Name</label>
+            <StyledInput
+              type="text"
             name="name"
             id="userName"
             onChange={nameChangeHandler}
             value={enteredName}
             placeholder="Enter your Name"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userSurname">Surname</Label>
-          <Input
-            type="text"
+            />
+          </div>
+          <div>
+            <label htmlFor="userSurname">Surname</label>
+            <StyledInput
+              type="text"
             name="surname"
             id="userSurname"
             onChange={surnameChangeHandler}
             value={enteredSurname}
             placeholder="Enter your Surname"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userEMail">Email</Label>
-          <Input
-            type="email"
+            />
+          </div>
+          <div>
+            <label htmlFor="userEMail">Email</label>
+            <StyledInput
+              type="email"
             name="email"
             id="userEMail"
             onChange={emailChangeHandler}
             value={enteredEmail}
             placeholder="Enter your Email"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userPassword1">Enter your Password</Label>
-          <Input
-            type="password"
+            />
+          </div>
+          <div>
+            <label htmlFor="userPassword1">Password</label>
+            <StyledInput
+              type="password"
             name="password1"
             id="userPassword1"
             onChange={password1ChangeHandler}
             value={enteredPassword1}
             placeholder="Enter your Password"
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label for="userPassword2">Confirm your Password</Label>
-          <Input
-            type="password"
+            />
+          </div>
+          <div>
+            <label htmlFor="userPassword2">Confirm Pasword</label>
+            <StyledInput
+              type="password"
             name="password2"
             id="userPassword2"
             onChange={password2ChangeHandler}
             value={enteredPassword2}
             placeholder="Enter your Password Again"
-          />
-        </FormGroup>
-        <Button type="Submit">Sign Up</Button>
-      </Form>
-    </Container>
+            />
+          </div>
+          <div>
+            <StyledButton type="submit">Register</StyledButton>
+          </div>
+        </StyleForm>
+      </StyleFormedWrapper>
+    </>
   );
 }

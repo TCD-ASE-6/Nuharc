@@ -3,13 +3,14 @@ import {
   UPDATE_SINGLE_INCIDENT,
 } from "../actions/incidentActionTypes";
 import axios from "axios";
+import API_URL from "../environment";
 
 let initialState = {
   incidentList: [],
 };
 
 axios
-  .get("/api/incident/")
+  .get(`${API_URL}/api/incident/`)
   .then((res) => {
     initialState.incidentList = res.data;
   })

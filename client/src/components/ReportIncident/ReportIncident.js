@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "../../App.css";
-import { Button } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import AutoComplete from "../AutoComplete/AutoComplete";
+import {
+  Globalstyle,
+  StyleFormedWrapper,
+  StyledButton,
+  RadioButton,
+  Item,
+  RadioButtonLabel,
+} from "../styled-component/FormStyle";
+import API_URL from "../../environment";
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -19,10 +27,10 @@ const DESTINATION_SPAN_ID = "destinationSpanId";
 function ReportIncident(props) {
   let mapRef = React.createRef();
   let autocompleteRequest = new XMLHttpRequest();
-  
+
   //HERE maps instance
   let H = window.H;
-  
+
   // Set State Hooks
   let map;
   const [tempMap, setTempMap] = useState(null);
@@ -34,7 +42,7 @@ function ReportIncident(props) {
   const [incidentAtDestination, setIncidentAtDestination] = useState(null);
   const [destinationCoordinates, setDestinationCoordinates] = useState(null);
   const [isFixedRoute, setIsFixedRoute] = useState(false);
-  
+
   const navigate = useNavigate();
 
   const getPlaceFromCoordinates = (coords) => {
@@ -216,7 +224,7 @@ function ReportIncident(props) {
 
     console.log(data);
 
-    axios.post("/api/incident/report", data).then((res) => {
+    axios.post(`${API_URL}/api/incident/report`, data).then((res) => {
       // update incidentList in redux store after incident was added
       // Below Call Not needed.
       // updateIncidentList();
@@ -240,28 +248,44 @@ function ReportIncident(props) {
    *
    */
   return (
-    <div>
-      {/* {this.updateCurrentLocation()} */}
-      <Button onClick={() => setCurrentPostion()}>Current Location</Button>
-      <AutoComplete updateLocation={setIncidentLocation} />
-      <p>Report an Incident</p>
-      <div ref={mapRef} style={{ height: "50vh" }}></div>
-      <div onChange={onChangeValue}>
+    <>
+      <Globalstyle />
+      <StyleFormedWrapper style={{display: "block"}}>
         <div>
-          <input type="radio" value="Fire" name="incident" /> Fire
-        </div>
-        <div>
-          <input type="radio" value="Explosion" name="incident" /> Explosion
-        </div>
-        <div>
-          <input type="radio" value="CarAccident" name="incident" /> Car
-          Accident
-        </div>
-      </div>
-      <button onClick={onsubmit} type="submit">
-        Submit
-      </button>
-    </div>
+          <StyledButton onClick={() => setCurrentPostion()}>
+            Current Location
+          </StyledButton>
+          </div>
+          <div>
+          <AutoComplete updateLocation={setIncidentLocation} />
+          </div>
+          <div>
+            <h4>Report an Incident</h4>
+          </div>
+          <div ref={mapRef} style={{ height: "50vh" }}></div>
+          <div onChange={onChangeValue}></div>
+          <br></br>
+          <h6>Choose Disaster Type - </h6>
+          <Item>
+            <RadioButton type="radio" value="Fire" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Fire</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="Explosion" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Explosion</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Car Accident</div>
+          </Item>
+          <StyledButton onClick={onsubmit} type="submit">
+            Submit
+          </StyledButton>
+      </StyleFormedWrapper>
+    </>
   );
 }
 

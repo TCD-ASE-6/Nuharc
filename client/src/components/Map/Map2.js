@@ -1,6 +1,6 @@
 import React from "react";
 import GoogleMapReact from "google-map-react";
-import { fitBounds } from "google-map-react";
+import API_URL from "../../environment";
 import Marker from "./Marker";
 import axios from "axios";
 import IncidentMarker from "./IncidentMarker";
@@ -8,6 +8,7 @@ import PlacesAutocomplete, {
   geocodeByAddress,
   getLatLng,
 } from "react-places-autocomplete";
+
 // import DisasterRouteService from "../../services/disaster-route.service";
 
 const API_KEY = "AIzaSyAMx4aEZjPHMjCnlyeqB5-K9tNKs2k4Dcs";
@@ -107,7 +108,7 @@ class Map2 extends React.Component {
   }
 
   async setIncidents() {
-    const incidents = await axios.get("/api/incident/");
+    const incidents = await axios.get(`${API_URL}/api/incident/`);
     this.setState({ incidents: { incidentList: incidents.data } });
   }
 
