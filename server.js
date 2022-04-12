@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const passport = require("passport");
 const config = require("config");
-const bodyParser = require("body-parser");
+const path = require("path");
 const request = require("request");
 const createHealthCheckManager = require("./loadBalancers/health-checks/index").createHealthCheckManager
 
@@ -78,6 +78,24 @@ app2.use("/api/directions", directionsAPI);
 
 app1.use("/api/incident", incidentsAPI);
 app2.use("/api/incident", incidentsAPI);
+
+app1.use(
+  express.static(path.join(__dirname, "../client/build"))
+);
+app2.use(
+  express.static(path.join(__dirname, "../client/build"))
+);
+// Catch all requests that don't match any route
+app1.get("*", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../client/build/index.html")
+  );
+});
+app2.get("*", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "../client/build/index.html")
+  );
+});
 
 // const port = process.env.PORT || 8080;
 
