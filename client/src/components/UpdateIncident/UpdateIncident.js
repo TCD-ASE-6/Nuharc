@@ -13,7 +13,7 @@ import {
   Modal,
   ModalHeader,
   ModalBody,
-  ModalFooter
+  ModalFooter,
 } from "reactstrap";
 import { useCookies } from "react-cookie";
 import Role from "../../helpers/role";
@@ -138,12 +138,11 @@ function UpdateIncident() {
       </Container>
 
       <Modal isOpen={modal} toggle={togglePopup}>
-        <ModalHeader toggle={togglePopup}>Unable To Resolve Incident.</ModalHeader>
-        <ModalBody>
-          Permission Denied.
-        </ModalBody>
+        <ModalHeader toggle={togglePopup}>
+          Unable To Resolve Incident.
+        </ModalHeader>
+        <ModalBody>Permission Denied.</ModalBody>
       </Modal>
-
     </div>
   );
 }

@@ -56,9 +56,9 @@ class Map3 extends Component {
    */
   constructor(props) {
     super(props);
-    const safe_zone_1 = new this.H.geo.Point(SAFE_LAT_1,SAFE_LNG_1);
-    const safe_zone_2 = new this.H.geo.Point(SAFE_LAT_2,SAFE_LNG_2);
-    const safe_zone_3 = new this.H.geo.Point(SAFE_LAT_3,SAFE_LNG_3);
+    const safe_zone_1 = new this.H.geo.Point(SAFE_LAT_1, SAFE_LNG_1);
+    const safe_zone_2 = new this.H.geo.Point(SAFE_LAT_2, SAFE_LNG_2);
+    const safe_zone_3 = new this.H.geo.Point(SAFE_LAT_3, SAFE_LNG_3);
     this.state = {
       map: null,
       destinationCoordinates: {
@@ -70,7 +70,7 @@ class Map3 extends Component {
       router: null,
       currentMarker: null,
       destinationMarker: null,
-      safeZones: [safe_zone_1,safe_zone_2,safe_zone_3],
+      safeZones: [safe_zone_1, safe_zone_2, safe_zone_3],
       role: null,
       modal: false,
     };
@@ -161,14 +161,16 @@ class Map3 extends Component {
    *
    */
   async setIncidents() {
-    console.log(`In map 3... ${API_URL}`)
-    console.log(`process env.. ${process.env.NODE_ENV.trim()}` )
+    console.log(`In map 3... ${API_URL}`);
+    console.log(`process env.. ${process.env.NODE_ENV.trim()}`);
     const incidents = await axios.get(`${API_URL}/api/incident/`);
     this.setState({ incidents: { incidentList: incidents.data } });
   }
 
   async setResolved() {
+    console.log("in set resolved", this.state.role);
     if (this.state.role === Role.EmergencyStaff) {
+      console.log(this.state.role);
       let incidentAtDestination = this.state.incidentAtDestination;
       incidentAtDestination.active = false;
       const requestOptions = {
@@ -180,9 +182,8 @@ class Map3 extends Component {
       const response = await fetch(
         `${API_URL}/api/incident/${incidentAtDestination._id}`,
         requestOptions
-      ).then((response) => {
-        console.log(response.json());
-      });
+      );
+      console.log("... request completed..", response);
     } else {
       // if insuffienient permissions then make popup visible.
       this.togglePopup();
@@ -220,19 +221,29 @@ class Map3 extends Component {
           let disasterLng = parseFloat(incident.longitude.$numberDecimal);
           let disasterLat = parseFloat(incident.latitude.$numberDecimal);
           let disasterLocation = new this.H.geo.Point(disasterLat, disasterLng);
-          let currentCoordinates =  new this.H.geo.Point( position.coords.latitude, position.coords.longitude);
-          if (disasterLocation.distance(currentCoordinates) < DISASTER_RADIUS_METER){
+          let currentCoordinates = new this.H.geo.Point(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+          if (
+            disasterLocation.distance(currentCoordinates) <
+            DISASTER_RADIUS_METER
+          ) {
             console.log("user in disaster area");
             posInDisasterArea = true;
             break;
           }
         }
         if (posInDisasterArea) {
-          console.log(position.coords.latitude + " " + position.coords.longitude)
-          this.calculateNearestSafeZone(position.coords.latitude, position.coords.longitude);
-        }
-        else{
-          this.hideSafeZones()
+          console.log(
+            position.coords.latitude + " " + position.coords.longitude
+          );
+          this.calculateNearestSafeZone(
+            position.coords.latitude,
+            position.coords.longitude
+          );
+        } else {
+          this.hideSafeZones();
         }
       },
       function error(err) {
@@ -247,22 +258,21 @@ class Map3 extends Component {
    * @currLat latitude of the user
    * @currentLng longitue of the user
    */
-  calculateNearestSafeZone(currLat,currLng){
+  calculateNearestSafeZone(currLat, currLng) {
     console.log("calculate nearest safezone");
-    let currentCoordinates =  new this.H.geo.Point(currLat, currLng);
+    let currentCoordinates = new this.H.geo.Point(currLat, currLng);
     let currMinimum = Number.MAX_VALUE;
-    let nearestSafeZone = null
-    for (let currSafeZone of this.state.safeZones){
-      let currDistance = currSafeZone.distance(currentCoordinates)
-      if (currDistance < currMinimum){
-        currMinimum = currDistance
+    let nearestSafeZone = null;
+    for (let currSafeZone of this.state.safeZones) {
+      let currDistance = currSafeZone.distance(currentCoordinates);
+      if (currDistance < currMinimum) {
+        currMinimum = currDistance;
         nearestSafeZone = currSafeZone;
       }
     }
-    this.calculateSafeZoneRoute(nearestSafeZone.lat,nearestSafeZone.lng)
-    this.createSafeZones()
+    this.calculateSafeZoneRoute(nearestSafeZone.lat, nearestSafeZone.lng);
+    this.createSafeZones();
   }
-
 
   /**
    * This function sets the map state so its zoomed to the calculated route with both markers
@@ -341,14 +351,14 @@ class Map3 extends Component {
    */
   removeObjectFromMap(objectID) {
     //map might not be set
-    try{
+    try {
       for (let object of this.state.map.getObjects()) {
         if (object.id === objectID) {
           this.state.map.removeObject(object);
         }
       }
-    } catch(error){
-      console.log("Error in remove map: " + error)
+    } catch (error) {
+      console.log("Error in remove map: " + error);
     }
   }
 
@@ -367,9 +377,14 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "blue", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
-          lineTailCap: 'arrow-tail',
-          lineHeadCap: 'arrow-head'},
+          style: {
+            strokeColor: "blue",
+            lineWidth: 10,
+            fillColor: "white",
+            lineDash: [0, 1],
+            lineTailCap: "arrow-tail",
+            lineHeadCap: "arrow-head",
+          },
         });
 
         // Create a marker for the start point:
@@ -397,7 +412,7 @@ class Map3 extends Component {
    *
    * @param {*} result answer from the server whıch contaıns the route
    */
-   onOriginalRoutingResult(result) {
+  onOriginalRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -423,7 +438,7 @@ class Map3 extends Component {
    *
    * @param {*} result answer from the server whıch contaıns the route
    */
-   onSafeZoneRoutingResult(result) {
+  onSafeZoneRoutingResult(result) {
     if (result.routes.length) {
       result.routes[0].sections.forEach((section) => {
         // Create a linestring to use as a point source for the route line
@@ -433,9 +448,14 @@ class Map3 extends Component {
 
         // Create a polyline to display the route:
         let routeLine = new this.H.map.Polyline(linestring, {
-          style: { strokeColor: "green", lineWidth: 10, fillColor: 'white', lineDash: [0, 1],
-          lineTailCap: 'arrow-tail',
-          lineHeadCap: 'arrow-head'},
+          style: {
+            strokeColor: "green",
+            lineWidth: 10,
+            fillColor: "white",
+            lineDash: [0, 1],
+            lineTailCap: "arrow-tail",
+            lineHeadCap: "arrow-head",
+          },
         });
 
         // Create a marker for the start point:
@@ -457,44 +477,43 @@ class Map3 extends Component {
       });
     }
   }
-/**
- * Calculate route to safe zone
- * @param {*} destinationLat latitude of safe zone
- * @param {*} destinationLng longitude of safe zone
- */
-  async calculateSafeZoneRoute(destinationLat,destinationLng) {
-      let disasterAreas = "";
-      for (const incident of this.state.incidents.incidentList) {
-        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
-        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
-        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
-        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
-        disasterAreas +=
-          "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
-      }
-      let routingParameters  = {
-        routingMode: ROUTING_MODE,
-        transportMode: TRANSPORT_MODE,
-        origin:
-          this.state.currentCoordinates.lat +
-          "," +
-          this.state.currentCoordinates.lng,
-        destination:
-        destinationLat +
-          "," +
-          destinationLng,
-        "avoid[areas]": disasterAreas,
-        return: "polyline",
-      };
+  /**
+   * Calculate route to safe zone
+   * @param {*} destinationLat latitude of safe zone
+   * @param {*} destinationLng longitude of safe zone
+   */
+  async calculateSafeZoneRoute(destinationLat, destinationLng) {
+    let disasterAreas = "";
+    for (const incident of this.state.incidents.incidentList) {
+      let lng1 =
+        parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+      let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+      let lng2 =
+        parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+      let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+      disasterAreas +=
+        "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
+    }
+    let routingParameters = {
+      routingMode: ROUTING_MODE,
+      transportMode: TRANSPORT_MODE,
+      origin:
+        this.state.currentCoordinates.lat +
+        "," +
+        this.state.currentCoordinates.lng,
+      destination: destinationLat + "," + destinationLng,
+      "avoid[areas]": disasterAreas,
+      return: "polyline",
+    };
     if (this.state.router) {
-        this.state.router.calculateRoute(
-          routingParameters,
-          this.onSafeZoneRoutingResult,
-          function (error) {
-            console.log(error.message);
-          });
-      }
-    else {
+      this.state.router.calculateRoute(
+        routingParameters,
+        this.onSafeZoneRoutingResult,
+        function (error) {
+          console.log(error.message);
+        }
+      );
+    } else {
       console.log("Could not calculate route. Router is null");
     }
   }
@@ -505,14 +524,18 @@ class Map3 extends Component {
    *
    */
   async calculateRoute(mode) {
-    let routingParameters = {}
-    if (mode){
+    let routingParameters = {};
+    if (mode) {
       let disasterAreas = "";
       for (const incident of this.state.incidents.incidentList) {
-        let lng1 = parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
-        let lat1 = parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
-        let lng2 = parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
-        let lat2 = parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
+        let lng1 =
+          parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
+        let lat1 =
+          parseFloat(incident.latitude.$numberDecimal) - DISASTER_RADIUS;
+        let lng2 =
+          parseFloat(incident.longitude.$numberDecimal) - DISASTER_RADIUS;
+        let lat2 =
+          parseFloat(incident.latitude.$numberDecimal) + DISASTER_RADIUS;
         disasterAreas +=
           "bbox:" + lng1 + "," + lat1 + "," + lng2 + "," + lat2 + "|";
       }
@@ -530,8 +553,7 @@ class Map3 extends Component {
         "avoid[areas]": disasterAreas,
         return: "polyline",
       };
-    }
-    else{
+    } else {
       routingParameters = {
         routingMode: ROUTING_MODE,
         transportMode: TRANSPORT_MODE,
@@ -548,21 +570,22 @@ class Map3 extends Component {
     }
 
     if (this.state.router) {
-      if (mode){
+      if (mode) {
         this.state.router.calculateRoute(
           routingParameters,
           this.onRoutingResult,
           function (error) {
             console.log(error.message);
-          });
-      }
-      else{
+          }
+        );
+      } else {
         this.state.router.calculateRoute(
           routingParameters,
           this.onOriginalRoutingResult,
           function (error) {
             console.log(error.message);
-          });
+          }
+        );
       }
     } else {
       console.log("Could not calculate route. Router is null");
@@ -697,17 +720,16 @@ class Map3 extends Component {
     if (id === "start_point") {
       this.setState({
         currentMarker: currentM,
-      })
+      });
     } else {
       this.setState({
         destinationMarker: currentM,
-      })
+      });
     }
     this.removeObjectFromMap(id);
-    try{
+    try {
       this.state.map.addObject(currentM);
-    }
-    catch(error) {
+    } catch (error) {
       console.log(error);
     }
     this.zoomToMarkers();
@@ -741,10 +763,19 @@ class Map3 extends Component {
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />
-            <button onClick={() => {this.calculateRoute(false);this.calculateRoute(true);}}>
+            <button
+              onClick={() => {
+                this.calculateRoute(false);
+                this.calculateRoute(true);
+              }}
+            >
               Calculate Route
             </button>
-            <button onClick={() => {this.setCurrentPostion();}}>
+            <button
+              onClick={() => {
+                this.setCurrentPostion();
+              }}
+            >
               Find Current Location
             </button>
           </div>
@@ -757,13 +788,6 @@ class Map3 extends Component {
                 <h2>Emergency Services Route Director</h2>
                 <Button color="primary" onClick={() => this.calculateRoute()}>
                   Show Route
-                </Button>{" "}
-                <Button
-                  color="success"
-                  onClick={() => this.setResolved()}
-                  type="submit"
-                >
-                  Set Resolved
                 </Button>
               </div>
             </ListGroupItem>
