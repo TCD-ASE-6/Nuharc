@@ -47,10 +47,10 @@ const weightedRoundRobinHandler = (req, res) => {
 };
 
 // Get MongoDbURI according to ENV script
-const db =
-  process.env.NODE_ENV.trim() === "production"
+const db = config.get("mongoURI");
+  /*process.env.NODE_ENV.trim() === "production"
     ? config.get("mongoURI")
-    : config.get("devMongoURI");
+    : config.get("devMongoURI");*/
 
 // Connect to MongoDB
 mongoose

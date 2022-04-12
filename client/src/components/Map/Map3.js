@@ -616,7 +616,7 @@ class Map3 extends Component {
         };
 
         //cache data to backend server
-        axios.put("/api/bikes/updateStation",data).catch((err) =>
+        axios.put(`${API_URL}/api/bikes/updateStation`,data).catch((err) =>
         console.log(err.response.data)
         );
         this.state.map.addObject(incidentMarker);

@@ -8,7 +8,7 @@ router.put("/updateStation", (req, res) => {
     const station = new BikeStation({
     longitude: req.body.longitude,
     latitude: req.body.latitude,
-    availableBikes: req.body.incidentType,
+    availableBikes: req.body.availableBikes,
     name: req.body.active,
     });
     station
@@ -19,3 +19,7 @@ router.put("/updateStation", (req, res) => {
         .json({ error: "Unable to update bike station. Error: " + err })
     );
 });
+
+/*router.get("/", (req, res) => {
+    
+});*/
