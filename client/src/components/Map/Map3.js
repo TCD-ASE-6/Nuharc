@@ -109,6 +109,7 @@ class Map3 extends Component {
         center: { lat: DUBLIN_LAT, lng: DUBLIN_LNG },
         zoom: INITIAL_ZOOM,
         pixelRatio: window.devicePixelRatio || 1,
+        padding: { top: 50, left: 50, bottom: 50, right: 50 },
       }
     );
     // real time traffic information

@@ -81,6 +81,7 @@ function ReportIncident(props) {
       center: { lat: DUBLIN_LAT, lng: DUBLIN_LNG },
       zoom: INITIAL_ZOOM,
       pixelRatio: window.devicePixelRatio || 1,
+      padding: { top: 50, left: 50, bottom: 50, right: 50 },
     });
 
     const behavior = new H.mapevents.Behavior(
@@ -203,8 +204,15 @@ function ReportIncident(props) {
       setIncidentCoordinates({ lat: coords.lat, lng: coords.lng });
       let coordinates = { lat: coords.lat, lng: coords.lng };
       setPositionMarker(coordinates);
+      map.getViewModel().setLookAtData(
+        {
+          position: coordinates,
+          zoom: 14,
+        },
+        true
+      );
     } catch (err) {
-      console.log("Error in fetching coordinates");
+      console.log("Error in fetching coordinates", err);
     }
   };
 
@@ -250,42 +258,42 @@ function ReportIncident(props) {
   return (
     <>
       <Globalstyle />
-      <StyleFormedWrapper style={{display: "block"}}>
+      <StyleFormedWrapper style={{ display: "block" }}>
         <div>
           <StyledButton onClick={() => setCurrentPostion()}>
             Current Location
           </StyledButton>
-          </div>
-          <div>
+        </div>
+        <div>
           <AutoComplete updateLocation={setIncidentLocation} />
-          </div>
-          <div>
-            <h4>Report an Incident</h4>
-          </div>
-          <div ref={mapRef} style={{ height: "50vh" }}></div>
-          
-          <br></br>
-          <h6>Choose Disaster Type - </h6>
-          <div onChange={onChangeValue}>
-            <Item>
-              <RadioButton type="radio" value="Fire" name="incident" />{" "}
-              <RadioButtonLabel />
-              <div>Fire</div>
-            </Item>
-            <Item>
-              <RadioButton type="radio" value="Explosion" name="incident" />{" "}
-              <RadioButtonLabel />
-              <div>Explosion</div>
-            </Item>
-            <Item>
-              <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
-              <RadioButtonLabel />
-              <div>Car Accident</div>
-            </Item>
-          </div>
-          <StyledButton onClick={onsubmit} type="submit">
-            Submit
-          </StyledButton>
+        </div>
+        <div>
+          <h4>Report an Incident</h4>
+        </div>
+        <div ref={mapRef} style={{ height: "50vh" }}></div>
+
+        <br></br>
+        <h6>Choose Disaster Type - </h6>
+        <div onChange={onChangeValue}>
+          <Item>
+            <RadioButton type="radio" value="Fire" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Fire</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="Explosion" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Explosion</div>
+          </Item>
+          <Item>
+            <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
+            <RadioButtonLabel />
+            <div>Car Accident</div>
+          </Item>
+        </div>
+        <StyledButton onClick={onsubmit} type="submit">
+          Submit
+        </StyledButton>
       </StyleFormedWrapper>
     </>
   );
