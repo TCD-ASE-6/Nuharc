@@ -55,7 +55,7 @@ const Signup2 = (props) => {
         console.log(res);
         console.log(res.data);
         setTimeout(() => {
-          navigate("/");
+          navigate("/login");
         }, 2000);
       })
       .catch((err)=>{
