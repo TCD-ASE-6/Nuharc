@@ -292,9 +292,12 @@ class Map3 extends Component {
       // this.state.map.addObject(this.state.currentMarker);
       // this.state.map.addObject(this.state.destinationMarker);
       this.state.map.addObject(group);
-      this.state.map.getViewModel().setLookAtData({
-        bounds: group.getBoundingBox(),
-      });
+      this.state.map.getViewModel().setLookAtData(
+        {
+          bounds: group.getBoundingBox(),
+        },
+        true
+      );
     }
   }
 
