@@ -263,24 +263,26 @@ function ReportIncident(props) {
             <h4>Report an Incident</h4>
           </div>
           <div ref={mapRef} style={{ height: "50vh" }}></div>
-          <div onChange={onChangeValue}></div>
+          
           <br></br>
           <h6>Choose Disaster Type - </h6>
-          <Item>
-            <RadioButton type="radio" value="Fire" name="incident" />{" "}
-            <RadioButtonLabel />
-            <div>Fire</div>
-          </Item>
-          <Item>
-            <RadioButton type="radio" value="Explosion" name="incident" />{" "}
-            <RadioButtonLabel />
-            <div>Explosion</div>
-          </Item>
-          <Item>
-            <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
-            <RadioButtonLabel />
-            <div>Car Accident</div>
-          </Item>
+          <div onChange={onChangeValue}>
+            <Item>
+              <RadioButton type="radio" value="Fire" name="incident" />{" "}
+              <RadioButtonLabel />
+              <div>Fire</div>
+            </Item>
+            <Item>
+              <RadioButton type="radio" value="Explosion" name="incident" />{" "}
+              <RadioButtonLabel />
+              <div>Explosion</div>
+            </Item>
+            <Item>
+              <RadioButton type="radio" value="CarAccident" name="incident" />{" "}
+              <RadioButtonLabel />
+              <div>Car Accident</div>
+            </Item>
+          </div>
           <StyledButton onClick={onsubmit} type="submit">
             Submit
           </StyledButton>
