@@ -704,7 +704,12 @@ class Map3 extends Component {
       })
     }
     this.removeObjectFromMap(id);
-    this.state.map.addObject(currentM);
+    try{
+      this.state.map.addObject(currentM);
+    }
+    catch(error) {
+      console.log(error);
+    }
     this.zoomToMarkers();
   }
 

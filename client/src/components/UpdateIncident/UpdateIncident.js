@@ -38,6 +38,7 @@ function UpdateIncident() {
   useEffect(() => {
     console.log("component mounted!");
     getAllIncidents();
+    getRole();
   }, []);
 
   const getAllIncidents = async () => {
@@ -65,6 +66,7 @@ function UpdateIncident() {
   };
 
   const setResolved = async (incident) => {
+    console.log(role);
     // only emergency staff can resolve indidents.
     if (role === Role.EmergencyStaff) {
       let incidentAtDestination = incident;
