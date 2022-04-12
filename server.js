@@ -11,6 +11,7 @@ const createHealthCheckManager = require("./loadBalancers/health-checks/index").
 const directionsAPI = require("./routes/api/directions");
 const incidentsAPI = require("./routes/api/reportDisasterAPI");
 const usersAPI = require("./routes/api/users");
+const bikesAPI = require("./routes/api/dublinBikesAPI");
 const WeightedRoundRobin  = require("./loadBalancers/weightedRoundRobin");
 
 const app1 = express();
@@ -46,8 +47,7 @@ const weightedRoundRobinHandler = (req, res) => {
 };
 
 // Get MongoDbURI according to ENV script
-const db =
-  process.env.NODE_ENV.trim() === "production"
+const db = process.env.NODE_ENV.trim() === "production"
     ? config.get("mongoURI")
     : config.get("devMongoURI");
 
@@ -78,6 +78,9 @@ app2.use("/api/directions", directionsAPI);
 
 app1.use("/api/incident", incidentsAPI);
 app2.use("/api/incident", incidentsAPI);
+
+app1.use("/api/bikes", bikesAPI);
+app2.use("/api/bikes", bikesAPI);
 
 app1.use(
   express.static(path.join(__dirname, "../client/build"))
