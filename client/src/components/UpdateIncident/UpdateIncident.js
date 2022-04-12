@@ -17,6 +17,7 @@ import {
 } from "reactstrap";
 import { useCookies } from "react-cookie";
 import Role from "../../helpers/role";
+import API_URL from "../../environment";
 
 // require('dotenv').config();
 
@@ -41,7 +42,7 @@ function UpdateIncident() {
 
   const getAllIncidents = async () => {
     // TODO: add sort by distance
-    const incidents = await axios.get("/api/incident/");
+    const incidents = await axios.get(`${API_URL}/api/incident/`);
     setIncidentList(incidents.data);
     console.log(incidentList);
   };
@@ -75,7 +76,7 @@ function UpdateIncident() {
       };
       const baseUrl = process.env.REACT_APP_BASE_URL;
       const response = await fetch(
-        `${baseUrl}/api/incident/${incidentAtDestination._id}`,
+        `${API_URL}/api/incident/${incidentAtDestination._id}`,
         requestOptions
       ).then((response) => {
         getAllIncidents();

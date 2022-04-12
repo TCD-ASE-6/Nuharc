@@ -10,6 +10,9 @@ import {
   StyledInput,
 } from "../styled-component/FormStyle";
 
+import API_URL from "../../environment";
+
+
 function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -35,7 +38,7 @@ function LoginPage() {
   // function to login user and store the cookie.
   const loginUserAndStoreInCookie = async (user) => {
     axios
-      .post(`/api/users/login`, user)
+      .post(`${API_URL}/api/users/login`, user)
       .then((response) => {
         // const userDetails = response.json();
         // store global user details in a cookie

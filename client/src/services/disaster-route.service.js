@@ -8,7 +8,7 @@ class DisasterRouteService {
   incidentList = [];
 
   async configureIncidentList() {
-    this.incidentList = await axios.get("http://localhost:8080/api/incident/");
+    this.incidentList = await axios.get(`${API_URL}/api/incident/`);
   }
 
   generateIncidentData() {
@@ -20,7 +20,7 @@ class DisasterRouteService {
     await this.configureIncidentList();
     try {
       data = await axios.get(
-        `http://localhost:8080/api/directions/getRoute?source=${from}&destination=${to}`
+        `${API_URL}/api/directions/getRoute?source=${from}&destination=${to}`
       );
     } catch (error) {
       console.log(error);
