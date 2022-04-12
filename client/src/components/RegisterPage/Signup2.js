@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { signupUser } from "../../actions/userActions";
 import Role from "../../helpers/role";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,6 +8,8 @@ import {
   StyledButton,
   StyledInput,
 } from "../styled-component/FormStyle";
+import axios from "axios";
+import API_URL from "../../environment";
 
 const Signup2 = (props) => {
   const navigate = useNavigate();
@@ -41,19 +42,32 @@ const Signup2 = (props) => {
       name: enteredName,
       surname: enteredSurname,
       email: enteredEmail,
-      password: enteredPassword1,
-      confirmPassword: enteredPassword2,
+      password1: enteredPassword1,
+      password2: enteredPassword2,
       role: Role.User,
     };
-    signupUser(signUpData);
-    navigate("/login");
+    signUpUser(signUpData);
   };
+
+  const signUpUser = async (user) => {
+    axios.post(`${API_URL}/api/users/signup`, user)
+      .then(res => {
+        console.log(res);
+        console.log(res.data);
+        setTimeout(() => {
+          navigate("/login");
+        }, 2000);
+      })
+      .catch((err)=>{
+        console.log(err);
+      })
+  }
 
   return (
     <>
       <Globalstyle />
       <StyleFormedWrapper>
-        <StyleForm onSubmit={submitHandler}>
+        <StyleForm>
           <div>
             <label htmlFor="name">Name</label>
             <StyledInput
@@ -105,7 +119,7 @@ const Signup2 = (props) => {
             />
           </div>
           <div>
-            <StyledButton type="submit">Sign Up</StyledButton>
+            <StyledButton type="submit" onClick={submitHandler}>Sign Up</StyledButton>
           </div>
         </StyleForm>
       </StyleFormedWrapper>
