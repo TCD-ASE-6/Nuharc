@@ -45,8 +45,8 @@ function NavBar() {
               <Nav.Link href="/map">Map</Nav.Link>
               <Nav.Link href="/map3">HereMap</Nav.Link>
               <Nav.Link href="/report">Report Incident</Nav.Link>
-              {(role === "admin" ? true : false) && (
-                <Nav.Link href="/update-incident">Admin</Nav.Link>
+              {(role === "admin" || role === "emergency_staff" ? true : false) && (
+                <Nav.Link href="/update-incident">Emergency Staff</Nav.Link>
               )}
               {(role === "admin" ? true : false) && (
                 <Nav.Link href="/register-service">Register Service</Nav.Link>

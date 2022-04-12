@@ -46,10 +46,10 @@ const weightedRoundRobinHandler = (req, res) => {
 };
 
 // Get MongoDbURI according to ENV script
-const db =
-  process.env.NODE_ENV.trim() === "production"
-    ? config.get("mongoURI")
-    : config.get("devMongoURI");
+const db = config.get("mongoURI")
+  // process.env.NODE_ENV.trim() === "production"
+    // ? config.get("mongoURI")
+    // : config.get("devMongoURI");
 
 // Connect to MongoDB
 mongoose
@@ -119,7 +119,7 @@ const onSendFailureWithShutdownLogger = () => {
   console.log("Sending failure has occcured for Shutdown ")
 }
 
-const livenessCheck = () => new Promise((resolve, _reject) => {
+const livenessCheck = () => new Promise((resolve, reject) => {
   // TODO: Need to add logic overhere to set app functioning correctly
   const appFunctioning = true;
   if (appFunctioning) {

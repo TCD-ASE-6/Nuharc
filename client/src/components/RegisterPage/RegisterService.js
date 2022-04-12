@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { signupUser } from "../../actions/userActions";
 import Role from "../../helpers/role";
-import { useNavigate } from "react-router-dom";
 import {
   Globalstyle,
   StyleForm,
@@ -9,14 +7,17 @@ import {
   StyledButton,
   StyledInput,
 } from "../styled-component/FormStyle";
+import axios from "axios";
+import API_URL from "../../environment";
 
 export default function RegisterService() {
-  const navigate = useNavigate();
   const [enteredName, setEnteredName] = useState("");
   const [enteredSurname, setEnteredSurname] = useState("");
   const [enteredEmail, setEnteredEmail] = useState("");
   const [enteredPassword1, setEnteredPassword1] = useState("");
   const [enteredPassword2, setEnteredPassword2] = useState("");
+  const [hasSignedIn, setHasSignedIn] = useState(false);
+  const [error, setIsError] = useState(false);
 
   const nameChangeHandler = (event) => {
     setEnteredName(event.target.value);
@@ -41,13 +42,25 @@ export default function RegisterService() {
       name: enteredName,
       surname: enteredSurname,
       email: enteredEmail,
-      password: enteredPassword1,
-      confirmPassword: enteredPassword2,
-      role: Role.Admin,
+      password1: enteredPassword1,
+      password2: enteredPassword2,
+      role: Role.EmergencyStaff,
     };
-    signupUser(signUpData);
-    navigate("/login");
+    signUpUser(signUpData);
   };
+
+  const signUpUser = async (user) => {
+    axios.post(`${API_URL}/api/users/signup`, user)
+      .then(res => {
+        if(res.status===200) {
+          setHasSignedIn(true);
+        }
+      })
+      .catch((err)=>{
+        setIsError(true)
+        console.log(err);
+      })
+  }
 
   return (
     <>
@@ -111,6 +124,18 @@ export default function RegisterService() {
           </div>
           <div>
             <StyledButton type="submit">Register</StyledButton>
+          </div>
+          <div>
+            {hasSignedIn && (
+              <h4 style={{ color: "green", textAlign: "center" }}>
+                  User Created!.
+              </h4>
+            )}
+            {error && (
+              <h4 style={{ color: "red", textAlign: "center" }}>
+                  Failed!.
+              </h4>
+            )}
           </div>
         </StyleForm>
       </StyleFormedWrapper>
