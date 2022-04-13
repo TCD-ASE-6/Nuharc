@@ -53,3 +53,4 @@ TODO: Disable redux dev tools extension in store.js before running integration t
 cd into client, run npx cypress open
 
 ![Noah's Arc](./assets/arc.jpg "Noah's Arc")
+```Image Credit to Zoltan Tasi```
