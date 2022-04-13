@@ -101,12 +101,6 @@ app2.use("/api/users", usersAPI);
 app1.use("/api/directions", directionsAPI);
 app2.use("/api/directions", directionsAPI);
 
-// app1.use("/api/incident", incidentsAPI, function (req, res, next) {
-//   if (req.method === "POST" || req.method === "PUT") {
-//     io.emit("reload");
-//   }
-//   console.log("in app1.use", req.method);
-// });
 app1.use("/api/incident", incidentsAPI);
 app2.use("/api/incident", incidentsAPI);
 

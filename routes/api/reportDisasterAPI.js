@@ -55,7 +55,7 @@ router.post("/report", (req, res) => {
         newIncident
           .save()
           .then((incident) => {
-            req.io.emit("reload");
+            req.io.emit("reload", null);
             return res.json({
               msg: "Incident added successfully",
               incident: incident,
@@ -78,9 +78,11 @@ router.post("/report", (req, res) => {
 
 router.put("/:id", (req, res) => {
   Incident.findByIdAndUpdate(req.params.id, req.body)
-    .then((incident) =>
-      res.json({ msg: "Incident status updated successfully" })
-    )
+    .then((incident) => {
+      // Pass deleted incident id to reload on client
+      req.io.emit("reload", incident.id);
+      return res.json({ msg: "Incident status updated successfully" })
+    })
     .catch((err) =>
       res
         .status(400)
