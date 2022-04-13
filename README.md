@@ -6,8 +6,8 @@ A disaster can be reported at any location of the city, and the response should 
 
 ## The Team
 
-| College ID  | Surname  | First Name  Github Handle
-| :--------:    |:---------------:| :------:| :--------------: | :--------------: |
+| College ID  | Surname  | First Name | Github Handle
+| :--------:    |:---------------:| :------:| :--------------: |
 | 20303676      | Mudigonda          | Sai Kaushik  | [msaikaushik](https://github.com/msaikaushik), [faheimarslan](http://github.com/faheim-arslan)
 | 20301672      | Borole          | Bhushan    | [bhushan-borole](https://github.com/bhushan-borole)
 | 20305836      | Kraus | Oliver      | [OvrK-tcd](https://github.com/OvrK-tcd)
