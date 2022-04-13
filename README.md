@@ -1,8 +1,8 @@
 # Nuharc  
-```
+
 The goal of this project is to develop an application that simulates responses to disasters in Dublin city. The application uses a map to show traffic information in real time (i.e., cars and buses moving around the city) based on actual Dublin city data sources such as bus and traffic information.
 A disaster can be reported at any location of the city, and the response should re-route traffic to avoid roads blocked by the disaster; send emergency vehicles such as ambulances to help affected people; and plan evacuation routes that people must follow to be safe, including (but not restricted to) deployment of additional means of transport – e.g., buses – where possible. Disasters can emerge as a result of natural phenomena such as a river flooding, or human activities such as a fire in a stadium at the time of a concert.
-```
+
 
 ## The Team
 
