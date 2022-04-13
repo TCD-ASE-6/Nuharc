@@ -6,16 +6,16 @@ A disaster can be reported at any location of the city, and the response should 
 
 ## The Team
 
-| College ID  | Surname  | First Name | Mail ID | Github Handle
+| College ID  | Surname  | First Name  Github Handle
 | :--------:    |:---------------:| :------:| :--------------: | :--------------: |
-| 20303676      | Mudigonda          | Sai Kaushik  |  mudigons@tcd.ie  | [msaikaushik](https://github.com/msaikaushik), [faheimarslan](http://github.com/faheim-arslan)
-| 20301672      | Borole          | Bhushan   |  boroleb@tcd.ie | [bhushan-borole](https://github.com/bhushan-borole)
-| 20305836      | Kraus | Oliver     | krauso@tcd.ie | [OvrK-tcd](https://github.com/OvrK-tcd)
-| 20335040 	    | Singh 	        | Rajpal | singhr3@tcd.ie  | [Rajpal02](https://github.com/Rajpal02)
-| 21334470 	    | Sharma 	        | Ritika  | sharmari@tcd.ie    | [ritika24-s](https://github.com/ritika24-s)
-| 19303325 	    | Uniyal 	    | Shubham | uniyals@tcd.ie  | [shubham93](https://github.com/shubham93)
-| 20302472 	    | Arslan 	    | Tolga | arslant@tcd.ie  | [arslant-tcd](https://github.com/arslant-tcd)
-| 21330894 	    | Shukla 	    | Yash | yshukla@tcd.ie  | [yashshukla025](https://github.com/yashshukla025)
+| 20303676      | Mudigonda          | Sai Kaushik  | [msaikaushik](https://github.com/msaikaushik), [faheimarslan](http://github.com/faheim-arslan)
+| 20301672      | Borole          | Bhushan    | [bhushan-borole](https://github.com/bhushan-borole)
+| 20305836      | Kraus | Oliver      | [OvrK-tcd](https://github.com/OvrK-tcd)
+| 20335040 	    | Singh 	        | Rajpal | [Rajpal02](https://github.com/Rajpal02)
+| 21334470 	    | Sharma 	        | Ritika     | [ritika24-s](https://github.com/ritika24-s)
+| 19303325 	    | Uniyal 	    | Shubham  | [shubham93](https://github.com/shubham93)
+| 20302472 	    | Arslan 	    | Tolga   | [arslant-tcd](https://github.com/arslant-tcd)
+| 21330894 	    | Shukla 	    | Yash  | [yashshukla025](https://github.com/yashshukla025)
 
 
 #### It is highly Available.
