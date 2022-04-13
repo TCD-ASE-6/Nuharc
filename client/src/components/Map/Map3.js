@@ -14,6 +14,11 @@ import { Component } from "react";
 import AutoComplete from "../AutoComplete/AutoComplete";
 import Role from "../../helpers/role";
 import API_URL from "../../environment";
+import { io } from "socket.io-client";
+const socket = io({
+  path: `${API_URL}/socket`,
+  transports: ["websocket"],
+});
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -82,6 +87,10 @@ class Map3 extends Component {
     this.togglePopup = this.togglePopup.bind(this);
     this.setCurrentPostion();
     this.setIncidents();
+  }
+
+  componentDidUpdate() {
+    socket.on("reload", this.setIncidents());
   }
 
   // for popup
@@ -162,7 +171,7 @@ class Map3 extends Component {
    *
    */
   async setIncidents() {
-    console.log(`In map 3... ${API_URL}`);
+    console.log(`In map 3 set incidents... ${API_URL}`);
     console.log(`process env.. ${process.env.NODE_ENV.trim()}`);
     const incidents = await axios.get(`${API_URL}/api/incident/`);
     this.setState({ incidents: { incidentList: incidents.data } });

@@ -53,9 +53,14 @@ router.post("/report", (req, res) => {
         });
         newIncident
           .save()
-          .then((incident) =>
-            res.json({ msg: "Incident added successfully", incident: incident })
-          )
+          .then((incident) => {
+            req.app.io.emit("reload");
+            console.log("emit reload inside route /report");
+            return res.json({
+              msg: "Incident added successfully",
+              incident: incident,
+            });
+          })
           .catch((err) =>
             res
               .status(400)
