@@ -570,14 +570,6 @@ class Map3 extends Component {
       routingParameters = {
         routingMode: ROUTING_MODE,
         transportMode: TRANSPORT_MODE,
-        origin:
-          this.state.currentCoordinates.lat +
-          "," +
-          this.state.currentCoordinates.lng,
-        destination:
-          this.state.destinationCoordinates.lat +
-          "," +
-          this.state.destinationCoordinates.lng,
         return: "polyline",
       };
       if(disasterAreas !== "") {
@@ -587,16 +579,20 @@ class Map3 extends Component {
       routingParameters = {
         routingMode: ROUTING_MODE,
         transportMode: TRANSPORT_MODE,
-        origin:
-          this.state.currentCoordinates.lat +
-          "," +
-          this.state.currentCoordinates.lng,
-        destination:
-          this.state.destinationCoordinates.lat +
-          "," +
-          this.state.destinationCoordinates.lng,
         return: "polyline",
       };
+    }
+    if(this.state.currentCoordinates) {
+      routingParameters["origin"] =  
+      this.state.currentCoordinates.lat +
+      "," +
+      this.state.currentCoordinates.lng
+    }
+    if(this.state.destinationCoordinates) {
+      routingParameters["destination"] =  
+      this.state.destinationCoordinates.lat +
+      "," +
+      this.state.destinationCoordinates.lng
     }
 
     if (this.state.router) {
