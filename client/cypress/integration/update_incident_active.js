@@ -3,11 +3,12 @@ describe("Set Incident Active and show route", () => {
         cy.visit('/update-incident');
         cy.get('.btn').each(( item, index, list) => {
             // Returns the elements from the cy.get command
-            // console.log(list);
+            console.log(list);
             if(index == 0){
                 list[index].click();
             }
         });
+        cy.wait(1000);
         cy.findByRole('button', { name: /Show Route/i }).click();
         await cy.findByRole('button', { name: /Show Route/i }).click()
             .then((res) => {

@@ -4,11 +4,11 @@ describe("Signup Functionality", () => {
 		cy.visit('/');
 		cy.findByText("Account").click();
 		cy.findByText("Sign up").click();
-		cy.findByPlaceholderText("Enter your Name").type('Trinity');
-		cy.findByPlaceholderText("Enter your Surname").type('College');
-		cy.findByPlaceholderText("Enter your Email").type('non_user@tcd.com');
-		cy.findByLabelText(/enter your password/i).type('password');
-		cy.findByLabelText(/confirm your password/i).type('password');
+		cy.findByPlaceholderText("Enter Name").type('Trinity');
+		cy.findByPlaceholderText("Enter Surname").type('College');
+		cy.findByPlaceholderText("Enter Email").type('non_user@tcd.com');
+		cy.findByPlaceholderText('Enter Password').type('password');
+		cy.findByPlaceholderText('Confirm Password').type('password');
 
 		await cy.findByRole('button', { name: /Sign Up/i }).click()
 			.then((res) => {
