@@ -1,4 +1,5 @@
 const express = require("express");
+const { io } = require("socket.io-client");
 const router = express.Router();
 
 // Load Incident model
@@ -53,9 +54,13 @@ router.post("/report", (req, res) => {
         });
         newIncident
           .save()
-          .then((incident) =>
-            res.json({ msg: "Incident added successfully", incident: incident })
-          )
+          .then((incident) => {
+            req.io.emit("reload", null);
+            return res.json({
+              msg: "Incident added successfully",
+              incident: incident,
+            });
+          })
           .catch((err) =>
             res
               .status(400)
@@ -73,9 +78,11 @@ router.post("/report", (req, res) => {
 
 router.put("/:id", (req, res) => {
   Incident.findByIdAndUpdate(req.params.id, req.body)
-    .then((incident) =>
-      res.json({ msg: "Incident status updated successfully" })
-    )
+    .then((incident) => {
+      // Pass deleted incident id to reload on client
+      req.io.emit("reload", incident.id);
+      return res.json({ msg: "Incident status updated successfully" })
+    })
     .catch((err) =>
       res
         .status(400)

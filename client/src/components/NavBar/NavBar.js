@@ -42,8 +42,7 @@ function NavBar() {
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
-              <Nav.Link href="/map">Map</Nav.Link>
-              <Nav.Link href="/map3">HereMap</Nav.Link>
+              <Nav.Link href="/map3">Map</Nav.Link>
               <Nav.Link href="/report">Report Incident</Nav.Link>
               {(role === "admin" || role === "emergency_staff" ? true : false) && (
                 <Nav.Link href="/update-incident">Emergency Staff</Nav.Link>

@@ -5,15 +5,25 @@ import {
   Button,
   ListGroup,
   ListGroupItem,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
 } from "reactstrap";
 import { Component } from "react";
 import AutoComplete from "../AutoComplete/AutoComplete";
 import Role from "../../helpers/role";
 import API_URL from "../../environment";
+import { io } from "socket.io-client";
+const socket = io(API_URL, {
+  transports: ['websocket']
+});
+
+socket.on('connect', () => console.log(`Client connected: ${socket.id}`));
+
+socket.on('disconnect', (reason) =>
+  console.log(`Client disconnected: ${reason}`)
+);
+
+socket.on('connect_error', (reason) =>
+  console.log(`Client connect_error: ${reason}`)
+);
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -147,6 +157,16 @@ class Map3 extends Component {
         role: this.props.role,
       });
     }
+    socket.on("reload", (deletedIncident) => {
+      console.log("reloading incidents");
+      this.setIncidents();
+      this.calculateRoute(false)
+      this.calculateRoute(true)
+      if(deletedIncident !== null) {
+        console.log("DeletedIncident", deletedIncident)
+        this.removeObjectFromMap(deletedIncident)
+      }
+    });
   }
 
   /**
@@ -162,10 +182,11 @@ class Map3 extends Component {
    *
    */
   async setIncidents() {
-    console.log(`In map 3... ${API_URL}`);
+    console.log(`In map 3 set incidents... ${API_URL}`);
     console.log(`process env.. ${process.env.NODE_ENV.trim()}`);
     const incidents = await axios.get(`${API_URL}/api/incident/`);
-    this.setState({ incidents: { incidentList: incidents.data } });
+    const incidentData = Object.assign({incidentList: [...incidents.data]})
+    this.setState({ incidents: incidentData});
   }
 
   async setResolved() {
@@ -506,9 +527,11 @@ class Map3 extends Component {
         "," +
         this.state.currentCoordinates.lng,
       destination: destinationLat + "," + destinationLng,
-      "avoid[areas]": disasterAreas,
       return: "polyline",
     };
+    if(disasterAreas !== "") {
+      routingParameters["avoid[areas]"] = disasterAreas
+    }
     if (this.state.router) {
       this.state.router.calculateRoute(
         routingParameters,
@@ -531,7 +554,8 @@ class Map3 extends Component {
     let routingParameters = {};
     if (mode) {
       let disasterAreas = "";
-      for (const incident of this.state.incidents.incidentList) {
+      const incidents = await axios.get(`${API_URL}/api/incident/`);
+      for (const incident of incidents.data) {
         let lng1 =
           parseFloat(incident.longitude.$numberDecimal) + DISASTER_RADIUS;
         let lat1 =
@@ -546,31 +570,29 @@ class Map3 extends Component {
       routingParameters = {
         routingMode: ROUTING_MODE,
         transportMode: TRANSPORT_MODE,
-        origin:
-          this.state.currentCoordinates.lat +
-          "," +
-          this.state.currentCoordinates.lng,
-        destination:
-          this.state.destinationCoordinates.lat +
-          "," +
-          this.state.destinationCoordinates.lng,
-        "avoid[areas]": disasterAreas,
         return: "polyline",
       };
+      if(disasterAreas !== "") {
+        routingParameters["avoid[areas]"] = disasterAreas
+      }
     } else {
       routingParameters = {
         routingMode: ROUTING_MODE,
         transportMode: TRANSPORT_MODE,
-        origin:
-          this.state.currentCoordinates.lat +
-          "," +
-          this.state.currentCoordinates.lng,
-        destination:
-          this.state.destinationCoordinates.lat +
-          "," +
-          this.state.destinationCoordinates.lng,
         return: "polyline",
       };
+    }
+    if(this.state.currentCoordinates) {
+      routingParameters["origin"] =  
+      this.state.currentCoordinates.lat +
+      "," +
+      this.state.currentCoordinates.lng
+    }
+    if(this.state.destinationCoordinates) {
+      routingParameters["destination"] =  
+      this.state.destinationCoordinates.lat +
+      "," +
+      this.state.destinationCoordinates.lng
     }
 
     if (this.state.router) {
@@ -667,7 +689,7 @@ class Map3 extends Component {
    * @param {*} incidentDate The timestamp when the incident occured
    * @param {*} incidentType The type of the incident
    */
-  addIncidentMarkerToMap(incidentLat, incidentLng, incidentDate, incidentType) {
+  addIncidentMarkerToMap(incidentLat, incidentLng, incidentDate, incidentType, incidentId) {
     let innerElement = document.createElement("div");
     innerElement.style.color = "black";
     innerElement.style.width = "30px";
@@ -695,6 +717,7 @@ class Map3 extends Component {
         icon: incidentIcon,
       }
     );
+    incidentMarker.id = incidentId
     this.state.map.addObject(incidentMarker);
 
     let circleStyle = {
@@ -732,7 +755,9 @@ class Map3 extends Component {
     }
     this.removeObjectFromMap(id);
     try {
-      this.state.map.addObject(currentM);
+      if(currentM !== null && currentM!== undefined) {
+        this.state.map.addObject(currentM);
+      } 
     } catch (error) {
       console.log(error);
     }
@@ -754,16 +779,6 @@ class Map3 extends Component {
   render() {
     return (
       <div>
-        {/* pop up modal
-            giving an error for now 
-        */}
-        {/* <Modal isOpen={this.state.modal} toggle={() => this.togglePopup}>
-          <ModalHeader toggle={() => this.togglePopup}>
-            Unable To Resolve Incident.
-          </ModalHeader>
-          <ModalBody>Permission Denied.</ModalBody>
-        </Modal> */}
-
         {!this.state.isFixedRoute && (
           <div>
             <AutoComplete updateLocation={this.setDestinationCoordinates} />
@@ -804,7 +819,8 @@ class Map3 extends Component {
             incident.latitude.$numberDecimal,
             incident.longitude.$numberDecimal,
             incident.date,
-            incident.incidentType
+            incident.incidentType,
+            incident.id
           )
         )}
       </div>
