@@ -5,24 +5,25 @@ import {
   Button,
   ListGroup,
   ListGroupItem,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
 } from "reactstrap";
 import { Component } from "react";
 import AutoComplete from "../AutoComplete/AutoComplete";
 import Role from "../../helpers/role";
 import API_URL from "../../environment";
 import { io } from "socket.io-client";
-const socket = io({
-  path: API_URL,
+const socket = io(API_URL, {
+  transports: ['websocket']
 });
 
-socket.on("reload", () => {
-  console.log("reloading incidents");
-  // this.setIncidents();
-});
+socket.on('connect', () => console.log(`Client connected: ${socket.id}`));
+
+socket.on('disconnect', (reason) =>
+  console.log(`Client disconnected: ${reason}`)
+);
+
+socket.on('connect_error', (reason) =>
+  console.log(`Client connect_error: ${reason}`)
+);
 
 // HERE API key
 const API_KEY = "Z9irXJBDz_jDcLwmi-1WwTBdSTQmBci1wB9QqTzwZMY";
@@ -162,7 +163,9 @@ class Map3 extends Component {
     }
     socket.on("reload", () => {
       console.log("reloading incidents");
-      // this.setIncidents();
+      this.setIncidents();
+      // this.calculateRoute(false)
+      this.calculateRoute(true)
     });
   }
 

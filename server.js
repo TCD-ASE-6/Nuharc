@@ -75,9 +75,6 @@ const httpServer = http.createServer(server);
 // httpServer.use(cors());
 const io = new Server(httpServer);
 
-// io.on("connection", (socket) => {
-//   console.log("user connected!");
-// });
 // passport middleware
 app1.use(passport.initialize());
 app2.use(passport.initialize());
