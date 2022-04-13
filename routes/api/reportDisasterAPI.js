@@ -1,4 +1,5 @@
 const express = require("express");
+const { io } = require("socket.io-client");
 const router = express.Router();
 
 // Load Incident model
@@ -54,8 +55,7 @@ router.post("/report", (req, res) => {
         newIncident
           .save()
           .then((incident) => {
-            req.app.io.emit("reload");
-            console.log("emit reload inside route /report");
+            req.io.emit("reload");
             return res.json({
               msg: "Incident added successfully",
               incident: incident,

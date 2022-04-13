@@ -88,8 +88,14 @@ require("./config/passport")(passport);
 app1.use(cors());
 app2.use(cors());
 
-app1.io = io;
-app2.io = io;
+app1.use((req, res, next) => {
+  req.io = io;
+  return next();
+});
+app2.use((req, res, next) => {
+  req.io = io;
+  return next();
+});
 
 // Route base path rules
 app1.use("/api/users", usersAPI);

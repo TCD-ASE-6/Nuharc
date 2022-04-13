@@ -16,8 +16,12 @@ import Role from "../../helpers/role";
 import API_URL from "../../environment";
 import { io } from "socket.io-client";
 const socket = io({
-  path: `${API_URL}/socket`,
-  transports: ["websocket"],
+  path: API_URL,
+});
+
+socket.on("reload", () => {
+  console.log("reloading incidents");
+  // this.setIncidents();
 });
 
 // HERE API key
@@ -90,7 +94,7 @@ class Map3 extends Component {
   }
 
   componentDidUpdate() {
-    socket.on("reload", this.setIncidents());
+    console.log("update");
   }
 
   // for popup
@@ -156,6 +160,10 @@ class Map3 extends Component {
         role: this.props.role,
       });
     }
+    socket.on("reload", () => {
+      console.log("reloading incidents");
+      // this.setIncidents();
+    });
   }
 
   /**
