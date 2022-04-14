@@ -7,7 +7,7 @@ const { createHealthCheckManager } = require('../index')
 const SIGNAL_TERM = CONSTANTS.SIGNAL_INTERNAL
 
 createHealthCheckManager(server, {
-  beforeShutdown: () => {
+  beforeServerShutdown: () => {
     return new Promise((resolve) => {
       setTimeout(resolve, 1000)
     })

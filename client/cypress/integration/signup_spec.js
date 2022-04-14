@@ -6,7 +6,7 @@ describe("Signup Functionality", () => {
 		cy.findByText("Sign up").click();
 		cy.findByPlaceholderText("Enter Name").type('Trinity');
 		cy.findByPlaceholderText("Enter Surname").type('College');
-		cy.findByPlaceholderText("Enter Email").type('non_user@tcd.com');
+		cy.findByPlaceholderText("Enter Email").type(`non_user_${Date.now()}@tcd.com`);
 		cy.findByPlaceholderText('Enter Password').type('password');
 		cy.findByPlaceholderText('Confirm Password').type('password');
 

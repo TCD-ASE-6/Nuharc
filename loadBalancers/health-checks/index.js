@@ -150,7 +150,7 @@ function wrapWithHealthChecks (server, state, opts) {
  * @param {*} opts 
  */
 function wrapWithSignalHandler (server, state, opts) {
-  const { signals, onSignal, beforeShutdown, onShutdown, timeout, logging } = opts
+  const { signals, onSignal, beforeServerShutdown, onServerShutdown, timeout, logging } = opts
 
   stoppable(server, timeout)
 
@@ -160,12 +160,12 @@ function wrapWithSignalHandler (server, state, opts) {
     if (!state.isShuttingDown) {
       state.isShuttingDown = true
       try {
-        // Callback for beforeShutdown
-        await beforeShutdown()
+        // Callback for beforeServerShutdown
+        await beforeServerShutdown()
         // Callback for onSignal
         await onSignal()
-        // Callback for onShutdown
-        await onShutdown()
+        // Callback for onServerShutdown
+        await onServerShutdown()
         // Callback for asyncserver stip
         await asyncServerStop()
         signals.forEach(sig => process.removeListener(sig, cleanup))
@@ -182,27 +182,16 @@ function wrapWithSignalHandler (server, state, opts) {
 }
 
 function healthCheckManager (server, opts = {}) {
-  // Adding suppport for case insensitive routes
-  if (opts.caseInsensitiveFlag && opts.healthChecks) {
-    const healthChecksObj = {}
-
-    for (const key in opts.healthChecks) {
-      healthChecksObj[key.toLowerCase()] = opts.healthChecks[key]
-    }
-    opts.healthChecks = healthChecksObj
-  }
-
   const {
     signals = [],
     timeout = 1000,
-    onShutdown = dummyResolver,
-    beforeShutdown = dummyResolver,
+    onServerShutdown = dummyResolver,
+    beforeServerShutdown = dummyResolver,
     healthChecks = {},
     sendFailuresWithShutdown = true,
     onSendFailureWithShutdown,
     signal = CONSTANTS.SIGNAL_TERMINATE,
     logging = dummy,
-    caseInsensitiveFlag = false,
     statusSuccess = 200,
     statusError = 500,
     headers = opts.headers || {}
@@ -216,7 +205,6 @@ function healthCheckManager (server, opts = {}) {
       logging,
       sendFailuresWithShutdown,
       onSendFailureWithShutdown,
-      caseInsensitiveFlag,
       statusSuccess,
       statusError,
       headers
@@ -224,12 +212,14 @@ function healthCheckManager (server, opts = {}) {
   }
 
 // Ensuring backwards compatibility for signals
-  if (!signals.includes(signal)) signals.push(signal)
+  if (!signals.includes(signal)) {
+    signals.push(signal)
+  }
   wrapWithSignalHandler(server, actualState, {
     signals,
     onSignal,
-    beforeShutdown,
-    onShutdown,
+    beforeServerShutdown,
+    onServerShutdown,
     timeout,
     logging,
     headers

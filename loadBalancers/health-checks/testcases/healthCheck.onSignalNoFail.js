@@ -7,7 +7,7 @@ const SIGNAL_PROCESS = CONSTANTS.SIGNAL_INTERNAL
 const server = http.createServer((req, res) => res.end('server'))
 
 createHealthCheckManager(server, {
-  beforeShutdown: () => {
+  beforeServerShutdown: () => {
     return new Promise((resolve) => {
       setTimeout(resolve, 1000)
     })

@@ -14,7 +14,7 @@ createHealthCheckManager(server, {
     console.log('on-' + SIGNAL_TERM.toLowerCase() + '-done')
     return Promise.resolve()
   },
-  onShutdown: () => {
+  onServerShutdown: () => {
     console.log('on-shutdown-executed')
   }
 })

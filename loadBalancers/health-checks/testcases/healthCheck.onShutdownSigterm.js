@@ -10,7 +10,7 @@ createHealthCheckManager(server, {
     console.log('on-signal-terminate-runs')
     return Promise.resolve()
   },
-  onShutdown: () => {
+  onServerShutdown: () => {
     console.log('on-shutdown-runs')
   }
 })

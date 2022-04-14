@@ -13,7 +13,7 @@ createHealthCheckManager(server, {
   onSendFailureWithShutdown: async () => {
     console.log('onSendingFailed')
   },
-  beforeShutdown: () => {
+  beforeServerShutdown: () => {
     return new Promise((resolve) => {
       setTimeout(resolve, 1000)
     })

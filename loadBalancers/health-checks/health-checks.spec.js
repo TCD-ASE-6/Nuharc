@@ -359,7 +359,7 @@ describe('HealthCheck Manager', () => {
     expect(result.stdout.toString().trim()).to.eql('on-signal-terminate')
   })
 
-  it('runs onShutdown after SIGNAL_TERMINAL onSignal', () => {
+  it('runs onServerShutdown after SIGNAL_TERMINAL onSignal', () => {
     const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdownSigterm.js'])
     expect(result.stdout.toString().trim()).to.eql('on-signal-terminate-runs\non-shutdown-runs')
   })
@@ -374,12 +374,12 @@ describe('HealthCheck Manager', () => {
     expect(result.stdout.toString().trim()).to.eql('on-sigint-done')
   })
 
-  it('runs onShutdown after onSignal when SIGNAL_TERMINAL is sentand different signals are listened for', () => {
+  it('runs onServerShutdown after onSignal when SIGNAL_TERMINAL is sentand different signals are listened for', () => {
     const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_TERMINATE])
     expect(result.stdout.toString().trim()).to.eql('on-sigterm-done\non-shutdown-executed')
   })
 
-  it('runs onShutdown after onSignal when SIGNAL_INTERNAL is sent and different signals are listened for', () => {
+  it('runs onServerShutdown after onSignal when SIGNAL_INTERNAL is sent and different signals are listened for', () => {
     const result = spawnSync('node', ['loadBalancers/health-checks/testcases/healthCheck.onShutdown.onMultiple.js', CONSTANTS.SIGNAL_INTERNAL])
     expect(result.stdout.toString().trim()).to.eql('on-sigint-done\non-shutdown-executed')
   })

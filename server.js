@@ -117,11 +117,11 @@ app2.use("/api/bikes", bikesAPI);
 //   res.sendFile(path.join(__dirname, "./client/build/index.html"));
 // });
 
-const beforeShutdownCallback = () => {
+const beforeServerShutdownCallback = () => {
   console.log("Shutdown in Progress");
 };
 
-const onShutdownCallback = () => {
+const onServerShutdownCallback = () => {
   console.log("Shutdown has occured");
 };
 
@@ -157,8 +157,8 @@ function onSigterm() {
 
 const options = {
   timeout: 1000,
-  onShutdown: onShutdownCallback,
-  beforeShutdown: beforeShutdownCallback,
+  onServerShutdown: onServerShutdownCallback,
+  beforeServerShutdown: beforeServerShutdownCallback,
   healthChecks: {
     "/health/liveness": livenessCheck,
     __unsafeExposeStackTraces: true,
