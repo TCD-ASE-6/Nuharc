@@ -274,17 +274,17 @@ describe('HealthCheck Manager', () => {
       expect(response.headers.has('Content-Type')).to.eql(true)
       expect(response.headers.get('Content-Type')).to.eql('application/json')
       expect(hasHealthCheckExecuted).to.eql(true)
-      expect(internalState).to.eql({ isShuttingDown: false })
+      expect(internalState).to.eql({ isServerShuttingDown: false })
     })
 
-    it('exposes "isShuttingDown" when shutting down', (done) => {
+    it('exposes "isServerShuttingDown" when shutting down', (done) => {
       let responseAsserted = false
       let internalState
 
       execFile('node', ['loadBalancers/health-checks/testcases/healthCheck.onSignalNoFail.js'], (error) => {
         expect(error.signal).to.eql(CONSTANTS.SIGNAL_INTERNAL)
         expect(responseAsserted).to.eql(true)
-        expect(internalState).to.eql({ isShuttingDown: true })
+        expect(internalState).to.eql({ isServerShuttingDown: true })
         done()
       })
 

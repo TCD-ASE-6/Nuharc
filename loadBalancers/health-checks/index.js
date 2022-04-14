@@ -78,7 +78,7 @@ async function sendFailureResponse (res, options) {
 }
 
 const startingState = {
-  isShuttingDown: false
+  isServerShuttingDown: false
 }
 
 /**
@@ -95,7 +95,7 @@ function wrapWithHealthChecks (server, state, opts) {
     const checkListeners = isHandlerEnabled
       ? () => {}
       : async (healthCheckCallback, response) => {
-        if (state.isShuttingDown && sendFailuresWithShutdown) {
+        if (state.isServerShuttingDown && sendFailuresWithShutdown) {
           return sendFailureResponse(response, { onSendFailureWithShutdown, statusError })
         }
         let info
@@ -154,11 +154,11 @@ function wrapWithSignalHandler (server, state, opts) {
 
   stoppable(server, timeout)
 
-  const asyncServerStop = promisify(server.stop).bind(server)
+  const asyncStopServerCallback = promisify(server.stop).bind(server)
 
   async function cleanup (signal) {
-    if (!state.isShuttingDown) {
-      state.isShuttingDown = true
+    if (!state.isServerShuttingDown) {
+      state.isServerShuttingDown = true
       try {
         // Callback for beforeServerShutdown
         await beforeServerShutdown()
@@ -167,11 +167,11 @@ function wrapWithSignalHandler (server, state, opts) {
         // Callback for onServerShutdown
         await onServerShutdown()
         // Callback for asyncserver stip
-        await asyncServerStop()
+        await asyncStopServerCallback()
         signals.forEach(sig => process.removeListener(sig, cleanup))
         process.kill(process.pid, signal)
       } catch (error) {
-        logging('error happened during shutdown', error)
+        logging('Error occured during shutdown', error)
         process.exit(1)
       }
     }
