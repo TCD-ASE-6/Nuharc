@@ -71,10 +71,7 @@ class Map3 extends Component {
     const safe_zone_3 = new this.H.geo.Point(SAFE_LAT_3, SAFE_LNG_3);
     this.state = {
       map: null,
-      destinationCoordinates: {
-        lat: 53.35600864423722,
-        lng: -6.256456570972608,
-      },
+      destinationCoordinates: null,
       incidents: { incidentList: [] },
       address: "",
       router: null,
@@ -157,14 +154,14 @@ class Map3 extends Component {
         role: this.props.role,
       });
     }
-    socket.on("reload", (deletedIncident) => {
+    socket.on("RELOAD_INCIDENTS", (deletedIncident) => {
       console.log("reloading incidents");
       this.setIncidents();
       this.calculateRoute(false)
       this.calculateRoute(true)
       if(deletedIncident !== null) {
         console.log("DeletedIncident", deletedIncident)
-        this.removeObjectFromMap(deletedIncident)
+        this.removeObjectFromMap(deletedIncident, "From reload incidents")
       }
     });
   }
@@ -374,11 +371,12 @@ class Map3 extends Component {
    * ## ====================== ##
    * @param {*} objectID ID of the Object that is removed from the map.
    */
-  removeObjectFromMap(objectID) {
+  removeObjectFromMap(objectID, message = "Normal") {
     //map might not be set
     try {
       for (let object of this.state.map.getObjects()) {
-        if (object.id === objectID) {
+        // Added hyphenated check for circle
+        if (object.id === objectID || object.id === (objectID + "-" + objectID)) {
           this.state.map.removeObject(object);
         }
       }
@@ -730,7 +728,7 @@ class Map3 extends Component {
       75,
       { style: circleStyle }
     );
-
+    circle.id = incidentId + "-" + incidentId
     this.state.map.addObject(circle);
   }
 
@@ -755,9 +753,7 @@ class Map3 extends Component {
     }
     this.removeObjectFromMap(id);
     try {
-      if(currentM !== null && currentM!== undefined) {
         this.state.map.addObject(currentM);
-      } 
     } catch (error) {
       console.log(error);
     }
@@ -820,7 +816,7 @@ class Map3 extends Component {
             incident.longitude.$numberDecimal,
             incident.date,
             incident.incidentType,
-            incident.id
+            incident._id
           )
         )}
       </div>
